@@ -1,7 +1,7 @@
 ﻿const express = require('express');
 const http = require('http');
 
-const PORT = process.env.PORT || 8988;
+const PORT = process.env['PORT'] || 8988;
 
 const app = express();
 const server = http.createServer(app);
@@ -14,10 +14,10 @@ const io = require('socket.io')(server, {
 
 let connectedPeers: any[] = [];
 
-app.use(express.static(__dirname + '/client/dist/prod/'));
+app.use(express.static(__dirname + '/dist/'));
 
 app.get('/*', (req: any, res: any) => {
-    res.sendFile(__dirname + '/client/dist/prod/index.html');
+    res.sendFile(__dirname + '/dist/index.html');
 });
 
 io.on('connect', (socket: any) => {
@@ -25,7 +25,7 @@ io.on('connect', (socket: any) => {
     console.log(`${socket.id} is connected`);
     console.log(connectedPeers);
     io.to(socket.id).emit('connected', socket.id);
-    
+
     socket.on('disconnect', () => {
         console.log(`${socket.id} is disconnected`);
         connectedPeers = peersWithoutSocketId(socket.id);
@@ -46,7 +46,7 @@ io.on('connect', (socket: any) => {
 
         io.to(data.socketId).emit('webRTC-signaling', data);
     });
-    
+
     socket.on('ready-to-connect', () => {
         console.log(`${socket.id} is ready to connect`);
         io.to(socket.id).emit('ready-to-connect', peersWithoutSocketId(socket.id));
