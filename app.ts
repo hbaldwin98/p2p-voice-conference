@@ -55,6 +55,10 @@ io.on('connect', (socket: any) => {
     socket.on('user-toggled-mic', (mic: boolean) => {
       socket.broadcast.emit('user-toggled-mic', {userId: socket.id, mic});
     });
+
+    socket.on('user-talking', (userTalking: boolean) => {
+      socket.broadcast.emit('user-talking', {userId: socket.id, userTalking});
+    });
 });
 
 server.listen(PORT, () => {

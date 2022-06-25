@@ -81,6 +81,11 @@ export class WebRTCService {
     this.socket.on('user-toggled-mic', (data: any) => {
       this.channel.peers[data.userId].userMuted = data.mic;
     });
+
+    this.socket.on('user-talking', (data: any) => {
+      if (this.channel.peers[data.userId])
+        this.channel.peers[data.userId].userTalking = data.userTalking;
+    });
   }
 
   // initializes the local stream
@@ -114,22 +119,32 @@ export class WebRTCService {
       let shouldTimeout = this.channel.userStore.shouldVolumeTimeout;
       let noiseGate = this.channel.userStore.noiseGateValue;
       let timeout;
-      if (db < noiseGate) {
-        if (shouldTimeout && db < noiseGate - 3) {
-          this.channel.userStore.shouldVolumeTimeout = false;
-          timeout = setTimeout(() => {
-            this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
-          }, this.channel.userStore.volumeRelease);
-        }
-      }
 
-      if (this.channel.userStore.micMuted && db >= noiseGate && !shouldTimeout) {
-        if (timeout) clearTimeout(timeout);
-        this.channel.userStore.localStream.getAudioTracks()[0].enabled = true;
-        this.channel.userStore.shouldVolumeTimeout = true;
+      if (this.channel.userStore.micActive) {
+        if (db < noiseGate) {
+          if (shouldTimeout && db < noiseGate - 3) {
+            this.channel.userStore.shouldVolumeTimeout = false;
+            timeout = setTimeout(() => {
+              this.socket.emit('user-talking', false);
+              this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
+            }, this.channel.userStore.volumeRelease);
+          }
+        }
+
+        if (db >= noiseGate && !shouldTimeout) {
+          if (timeout) clearTimeout(timeout);
+          this.socket.emit('user-talking', true);
+          this.channel.userStore.localStream.getAudioTracks()[0].enabled = true;
+          this.channel.userStore.shouldVolumeTimeout = true;
+        }
+      } else {
+        this.socket.emit('user-talking', false);
+        this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
+        this.channel.userStore.shouldVolumeTimeout = false;
       }
       this.channel.userStore.volume = db;
     }
+
 
     this.channel.userStore.analyser = analyser;
     source.connect(javascriptNode);
@@ -140,31 +155,21 @@ export class WebRTCService {
   }
 
   async getVolumeInDb() {
-    // let values = 0;
-    // let average;
-    //
-    // let length = array.length;
-    //
-    // // get all the frequency amplitudes
-    // for (let i = 0; i < length; i++) {
-    //   values += array[i];
-    // }
-    //
-    // average = values / length;
-    let analyser =  this.channel.userStore.analyser;
+    //https://github.com/apm1467/html5-mic-visualizer/blob/master/js/index.js
+    let analyser = this.channel.userStore.analyser;
     let bufferLength = analyser.frequencyBinCount
     let frequencyArray = new Uint8Array(bufferLength)
     this.channel.userStore.analyser.getByteFrequencyData(frequencyArray);
 
-    var total = 0
-    for(var i = 0; i < 255; i++) {
-      var x = frequencyArray[i];
+    let total = 0
+    for (let i = 0; i < 255; i++) {
+      let x = frequencyArray[i];
       total += x * x;
     }
-    var rms = Math.sqrt(total / bufferLength);
-    var db = 20 * ( Math.log(rms) / Math.log(10) );
+    let rms = Math.sqrt(total / bufferLength);
+    let db = 20 * (Math.log(rms) / Math.log(10));
     db = Math.max(db, 0); // sanity check
-    return Math.floor(db);
+    return Math.round(db * 100) / 100;
   }
 
 
@@ -230,7 +235,8 @@ export class WebRTCService {
         type: 'offer', offer: offer, socketId: peerData, sender: this.channel.userStore.socketId,
       });
     }
-  };
+  }
+  ;
 
   // after receiving an offer, we exchange SDP information with the answer
   async handleWebRTCOffer(peerData: WebRTCAO) {
@@ -260,7 +266,8 @@ export class WebRTCService {
         type: 'answer', answer: answer, socketId: peerData.sender, sender: this.channel.userStore.socketId,
       });
     }
-  };
+  }
+  ;
 
   // once we receive an answer, we set the answer as the remote description
   async handleWebRTCAnswer(peerData: WebRTCAO) {
@@ -270,7 +277,8 @@ export class WebRTCService {
       console.log("handling webRTC answer", peerData);
       if (peerData.answer) await peer.rtcPeerConnection.setRemoteDescription(peerData.answer);
     }
-  };
+  }
+  ;
 
   // once we receive an ice candidate, we add it to the peer connection
   async handleWebRTCCandidate(peerData: WebRTCAO) {
@@ -284,7 +292,8 @@ export class WebRTCService {
         console.log(peerData);
       }
     }
-  };
+  }
+  ;
 
   // send WebRTC data to the peer
   sendWebRTCData(data: WebRTCAO) {

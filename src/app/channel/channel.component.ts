@@ -19,20 +19,34 @@ export class ChannelComponent implements OnInit {
     this.updateVolume();
   }
 
-  getMicStatus(): boolean {
-    return this.channel.userStore.micMuted;
+  getMicActive(): boolean {
+    return this.channel.userStore.micActive;
   }
 
-  toggleMicStatus() {
-    this.channel.userStore.micMuted = !this.channel.userStore.micMuted;
-    this.channel.userStore.localStream.getAudioTracks()[0].enabled = this.channel.userStore.micMuted;
-    this.socket.emit('user-toggled-mic', !this.channel.userStore.micMuted);
-    console.log(this.channel.userStore.localStream.getAudioTracks());
+  getLocalAudioStreamActive() {
+    if (this.channel.userStore.localStream.getAudioTracks()[0])
+      return this.channel.userStore.localStream.getAudioTracks()[0].enabled;
+
+    return false;
+  }
+
+  getPeerAudioStreamActive(userId: string) {
+    if (this.channel.peers[userId])
+      return this.channel.peers[userId].userTalking;
+
+    return false;
+  }
+
+  toggleMicActive() {
+    this.channel.userStore.micActive = !this.channel.userStore.micActive;
+    this.socket.emit('user-toggled-mic', !this.channel.userStore.micActive);
   }
 
   toggleLocalMuteStatus(userId: string) {
-    this.channel.peers[userId].localMuted = !this.channel.peers[userId].localMuted;
-    this.channel.peers[userId].remoteStream.getAudioTracks()[0].enabled = !this.channel.peers[userId].localMuted;
+    if (this.channel.peers[userId]) {
+      this.channel.peers[userId].localMuted = !this.channel.peers[userId].localMuted;
+      this.channel.peers[userId].remoteStream.getAudioTracks()[0].enabled = !this.channel.peers[userId].localMuted;
+    }
   };
 
   getLocalMuteStatus(userId: string): boolean {
@@ -40,7 +54,11 @@ export class ChannelComponent implements OnInit {
   }
 
   adjustVolume(e: any, userId: string) {
-    this.channel.peers[userId].volume = e.target.value / 100;
+    this.channel.peers[userId].volume = e.target.value;
+  }
+
+  adjustNoiseGate(e: any) {
+    this.channel.userStore.noiseGateValue = e.target.value;
   }
 
   startConnection() {

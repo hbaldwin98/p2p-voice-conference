@@ -10,7 +10,7 @@ export class ChannelService {
   userStore: IUserStore = {
     socketId: '',
     localStream: new MediaStream,
-    micMuted: true,
+    micActive: true,
     analyser: new AnalyserNode(new AudioContext()),
     volume: 0,
     shouldVolumeTimeout: true,
