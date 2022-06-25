@@ -30,6 +30,7 @@
     "ngx-bootstrap": "^8.0.0",
     "ngx-socket-io": "^4.2.0",
     "nodemon": "^2.0.16",
+    "recorder-audio-worklet-processor": "^4.2.13",
     "rxjs": "~7.5.0",
     "socket.io": "^4.5.1",
     "ts-node": "^10.8.1",

@@ -88,58 +88,83 @@ export class WebRTCService {
   initializeLocalStream() {
     return navigator.mediaDevices
       .getUserMedia(this.defaultConstraints)
-      .then((stream) => {
-        console.log('initializing local stream');
-        //create audio context
-        const audioContext = new AudioContext();
-        //create media stream source
-        const source = audioContext.createMediaStreamSource(stream);
-        // create destination
-        const destination = audioContext.createMediaStreamDestination();
-        //create analyzer node
-        const analyser = audioContext.createAnalyser();
-        analyser.minDecibels = -100;
-        analyser.maxDecibels = 0;
-        analyser.smoothingTimeConstant = 0.85;
-        let javascriptNode = audioContext.createScriptProcessor(2048, 2, 2);
-
-        javascriptNode.onaudioprocess = () => {
-          // get the average, bincount is fftsize / 2
-          var array =  new Uint8Array(analyser.frequencyBinCount);
-          analyser.getByteFrequencyData(array);
-          var average = this.getAverageVolume(array)
-          if (average < 4) {
-            this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
-          } else if (this.channel.userStore.micMuted) {
-            this.channel.userStore.localStream.getAudioTracks()[0].enabled = true;
-          }
-        }
-
-        this.channel.userStore.analyser = analyser;
-        source.connect(javascriptNode);
-        source.connect(analyser);
-        javascriptNode.connect(destination);
-        analyser.connect(destination);
-        this.channel.userStore.localStream = destination.stream;
-      })
+      .then(this.onMicrophoneGranted.bind(this))
       .catch((err) => {
         console.log('An error occured attempting to get the camera stream: ' + err,);
       });
   }
 
-  getAverageVolume(array: any) {
-    var values = 0;
-    var average;
+  onMicrophoneGranted(stream: MediaStream) {
+    console.log('initializing local stream');
+    const audioContext = new AudioContext();
 
-    var length = array.length;
+    const source = audioContext.createMediaStreamSource(stream);
+    const destination = audioContext.createMediaStreamDestination();
 
-    // get all the frequency amplitudes
-    for (var i = 0; i < length; i++) {
-      values += array[i];
+
+    const analyser = audioContext.createAnalyser();
+    analyser.minDecibels = -100;
+    analyser.maxDecibels = 0;
+    analyser.smoothingTimeConstant = 0.85;
+
+    let javascriptNode = audioContext.createScriptProcessor(2048, 2, 2);
+
+    javascriptNode.onaudioprocess = async () => {
+      let db = await this.getVolumeInDb()
+      let shouldTimeout = this.channel.userStore.shouldVolumeTimeout;
+      let noiseGate = this.channel.userStore.noiseGateValue;
+      let timeout;
+      if (db < noiseGate) {
+        if (shouldTimeout && db < noiseGate - 3) {
+          this.channel.userStore.shouldVolumeTimeout = false;
+          timeout = setTimeout(() => {
+            this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
+          }, this.channel.userStore.volumeRelease);
+        }
+      }
+
+      if (this.channel.userStore.micMuted && db >= noiseGate && !shouldTimeout) {
+        if (timeout) clearTimeout(timeout);
+        this.channel.userStore.localStream.getAudioTracks()[0].enabled = true;
+        this.channel.userStore.shouldVolumeTimeout = true;
+      }
+      this.channel.userStore.volume = db;
     }
 
-    average = values / length;
-    return average;
+    this.channel.userStore.analyser = analyser;
+    source.connect(javascriptNode);
+    source.connect(analyser);
+    javascriptNode.connect(destination);
+    analyser.connect(destination);
+    this.channel.userStore.localStream = destination.stream;
+  }
+
+  async getVolumeInDb() {
+    // let values = 0;
+    // let average;
+    //
+    // let length = array.length;
+    //
+    // // get all the frequency amplitudes
+    // for (let i = 0; i < length; i++) {
+    //   values += array[i];
+    // }
+    //
+    // average = values / length;
+    let analyser =  this.channel.userStore.analyser;
+    let bufferLength = analyser.frequencyBinCount
+    let frequencyArray = new Uint8Array(bufferLength)
+    this.channel.userStore.analyser.getByteFrequencyData(frequencyArray);
+
+    var total = 0
+    for(var i = 0; i < 255; i++) {
+      var x = frequencyArray[i];
+      total += x * x;
+    }
+    var rms = Math.sqrt(total / bufferLength);
+    var db = 20 * ( Math.log(rms) / Math.log(10) );
+    db = Math.max(db, 0); // sanity check
+    return Math.floor(db);
   }
 
 

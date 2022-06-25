@@ -8,10 +8,16 @@ import { Peer } from "../shared/models/peer";
 export class ChannelService {
   peers: { [key: string]: Peer } = {};
   userStore: IUserStore = {
-    socketId: '', localStream: new MediaStream, micMuted: true, analyser: new AnalyserNode(new AudioContext())
+    socketId: '',
+    localStream: new MediaStream,
+    micMuted: true,
+    analyser: new AnalyserNode(new AudioContext()),
+    volume: 0,
+    shouldVolumeTimeout: true,
+    volumeRelease: 100,
+    noiseGateValue: 25
   }
 
   constructor() {
   }
-
 }
