@@ -8,8 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "start:server": "nodemon ./app.ts",
-    "start:client": "cd client && npm run start",
-    "heroku-postbuild": "cd client && npm install && ng build"
+    "start:client": "npm run start",
+    "heroku-postbuild": "npm install && ng build"
   },
   "private": true,
   "dependencies": {
