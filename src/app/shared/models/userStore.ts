@@ -1,5 +1,7 @@
 ﻿export interface IUserStore {
   socketId: string,
   localStream: MediaStream,
-  micMuted: boolean
+  micMuted: boolean,
+  analyser: AnalyserNode
 }
+

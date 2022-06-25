@@ -35,6 +35,8 @@ export class WebRTCService {
 
   constructor(private channel: ChannelService, public socket: Socket) {}
 
+  // creating all the socket events that the client will
+  // listen to and handle
   async initializeSocketEvents() {
     this.socket.on('connected', (data: any) => {
       console.log('your socket id is', data);
@@ -81,58 +83,68 @@ export class WebRTCService {
     });
   }
 
-  async initializeLocalStream() {
+  // initializes the local stream
+  // this must be called BEFORE a WEB RTC offer/answer is sent
+  initializeLocalStream() {
     return navigator.mediaDevices
       .getUserMedia(this.defaultConstraints)
       .then((stream) => {
         console.log('initializing local stream');
-        // const FILTER_PARAMS = [ 'type', 'frequency', 'gain', 'detune', 'Q' ];
-        // const COMPRESSOR_PARAMS = [ 'threshold', 'knee', 'ratio', 'attack', 'release' ];
-        // const DEFAULT_OPTIONS = {
-        //   threshold: -50,
-        //   knee: 40,
-        //   ratio: 12,
-        //   reduction: -20,
-        //   attack: 0,
-        //   release: 0.25,
-        //   Q: 8.30,
-        //   frequency: 355,
-        //   gain: 3.0,
-        //   type: 'bandpass',
-        // };
-        // let audioCtx = new window.AudioContext();
-        // // let compressorPramas = this.selectParams(DEFAULT_OPTIONS, COMPRESSOR_PARAMS);
-        // // let filterPramas = this.selectParams(DEFAULT_OPTIONS, FILTER_PARAMS);
-        // // let compressor = new DynamicsCompressorNode(audioCtx, compressorPramas);
-        // // let filter = new BiquadFilterNode(audioCtx, filterPramas);
-        // let gain = new GainNode(audioCtx, { gain: 3 });
-        // let source = audioCtx.createMediaStreamSource(stream);
-        // let dest = audioCtx.createMediaStreamDestination();
-        // source.connect(gain);
-        // gain.connect(dest);
-        // source.connect(filter);
-        // source.connect(compressor);
-        // filter.connect(dest);
-        // compressor.connect(dest);
+        //create audio context
+        const audioContext = new AudioContext();
+        //create media stream source
+        const source = audioContext.createMediaStreamSource(stream);
+        // create destination
+        const destination = audioContext.createMediaStreamDestination();
+        //create analyzer node
+        const analyser = audioContext.createAnalyser();
+        analyser.minDecibels = -100;
+        analyser.maxDecibels = 0;
+        analyser.smoothingTimeConstant = 0.85;
+        let javascriptNode = audioContext.createScriptProcessor(2048, 2, 2);
 
-        this.channel.userStore.localStream = stream;
+        javascriptNode.onaudioprocess = () => {
+          // get the average, bincount is fftsize / 2
+          var array =  new Uint8Array(analyser.frequencyBinCount);
+          analyser.getByteFrequencyData(array);
+          var average = this.getAverageVolume(array)
+          if (average < 4) {
+            this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
+          } else if (this.channel.userStore.micMuted) {
+            this.channel.userStore.localStream.getAudioTracks()[0].enabled = true;
+          }
+        }
 
+        this.channel.userStore.analyser = analyser;
+        source.connect(javascriptNode);
+        source.connect(analyser);
+        javascriptNode.connect(destination);
+        analyser.connect(destination);
+        this.channel.userStore.localStream = destination.stream;
       })
       .catch((err) => {
         console.log('An error occured attempting to get the camera stream: ' + err,);
       });
   }
 
-  selectParams(object: any, filterArr: any) {
-    return Object.keys(object).reduce((opt: any, p) => {
-      if (filterArr.includes(p)) {
-        opt[p] = object[p];
-      }
-      return opt;
-    }, {});
+  getAverageVolume(array: any) {
+    var values = 0;
+    var average;
+
+    var length = array.length;
+
+    // get all the frequency amplitudes
+    for (var i = 0; i < length; i++) {
+      values += array[i];
+    }
+
+    average = values / length;
+    return average;
   }
 
-  async createPeerConnection(socketId: string) {
+
+  // creates a peer connection with a given peer
+  createPeerConnection(socketId: string) {
     let rtcPeerConnection = new RTCPeerConnection(this.configuration);
 
     // receiving tracks
@@ -195,6 +207,7 @@ export class WebRTCService {
     }
   };
 
+  // after receiving an offer, we exchange SDP information with the answer
   async handleWebRTCOffer(peerData: WebRTCAO) {
     await this.createPeerConnection(peerData.sender);
 
@@ -224,6 +237,7 @@ export class WebRTCService {
     }
   };
 
+  // once we receive an answer, we set the answer as the remote description
   async handleWebRTCAnswer(peerData: WebRTCAO) {
     let peer = this.channel.peers[peerData.sender];
     if (peer) {
@@ -233,6 +247,7 @@ export class WebRTCService {
     }
   };
 
+  // once we receive an ice candidate, we add it to the peer connection
   async handleWebRTCCandidate(peerData: WebRTCAO) {
     let peer = this.channel.peers[peerData.sender];
     if (peer) {
@@ -246,10 +261,12 @@ export class WebRTCService {
     }
   };
 
+  // send WebRTC data to the peer
   sendWebRTCData(data: WebRTCAO) {
     this.socket.emit('webRTC-signaling', data);
   }
 
+  // initializes the peer connection and begins the signaling process
   async initializePeerConnection(peer: string) {
     await this.createPeerConnection(peer);
     await this.sendWebRTCOffer(peer);

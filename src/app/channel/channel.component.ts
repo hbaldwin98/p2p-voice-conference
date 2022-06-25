@@ -42,7 +42,7 @@ export class ChannelComponent implements OnInit {
     this.channel.peers[userId].volume = e.target.value / 100;
   }
 
-  async startConnection() {
+  startConnection() {
     this.webRTC.initializeSocketEvents().then(() => {
       this.webRTC.initializeLocalStream();
     });
