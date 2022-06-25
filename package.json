@@ -8,7 +8,7 @@
     "start": "ts-node ./server/app.ts",
     "start:server": "nodemon ./app.ts",
     "start:client": "cd client && npm run start",
-    "heroku-postbuild": "cd client && ng build"
+    "heroku-postbuild": "cd client && npm install && ng build"
   },
   "author": "",
   "license": "ISC",
