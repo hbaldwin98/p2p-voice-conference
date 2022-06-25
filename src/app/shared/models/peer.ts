@@ -1,5 +1,6 @@
 ﻿export interface IPeer {
   socketId: string;
+  displayName: string;
   remoteStream: any;
   rtcPeerConnection: RTCPeerConnection;
   volume: number;
@@ -10,6 +11,7 @@
 
 export class Peer implements IPeer {
   socketId: string;
+  displayName = '';
   remoteStream: any;
   rtcPeerConnection: RTCPeerConnection;
   volume: number;

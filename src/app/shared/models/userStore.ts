@@ -1,4 +1,5 @@
 ﻿export interface IUserStore {
+  displayName: string,
   socketId: string,
   localStream: MediaStream,
   micActive: boolean,

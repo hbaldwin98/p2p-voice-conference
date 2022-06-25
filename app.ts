@@ -59,6 +59,11 @@ io.on('connect', (socket: any) => {
     socket.on('user-talking', (userTalking: boolean) => {
       socket.broadcast.emit('user-talking', {userId: socket.id, userTalking});
     });
+
+    socket.on('user-change-name', (name: string) => {
+      socket.broadcast.emit('user-change-name', {userId: socket.id, name});
+      console.log(`${socket.id} changed name to ${name}`);
+    });
 });
 
 server.listen(PORT, () => {

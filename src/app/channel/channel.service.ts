@@ -8,6 +8,7 @@ import { Peer } from "../shared/models/peer";
 export class ChannelService {
   peers: { [key: string]: Peer } = {};
   userStore: IUserStore = {
+    displayName: '',
     socketId: '',
     localStream: new MediaStream,
     micActive: true,

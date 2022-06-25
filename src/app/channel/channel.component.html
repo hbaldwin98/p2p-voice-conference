@@ -13,16 +13,18 @@
         <tbody>
         <tr>
           <th scope="row">1</th>
-          <td>{{channel.userStore.socketId}} <span>(You)</span></td>
+          <td>{{this.channel.userStore.displayName || channel.userStore.socketId}} <span>(You)</span></td>
           <td>
             <button class="btn btn-dark" (click)="toggleMicActive()"><i
-              [ngClass]="getMicActive() ? (getLocalAudioStreamActive() ? 'bi-mic-fill' : 'bi bi-mic') : 'bi bi-mic-mute'"></i></button>
+              [ngClass]="getMicActive() ? (getLocalAudioStreamActive() ? 'bi-mic-fill' : 'bi bi-mic') : 'bi bi-mic-mute'"></i>
+            </button>
           </td>
         </tr>
         <tr *ngFor="let peer of channel.peers | keyvalue; let i = index">
           <th scope="row">{{i + 2}}</th>
           <td><i
-            [ngClass]="peer.value.userMuted ? 'bi bi-mic-mute' : (getPeerAudioStreamActive(peer.value.socketId) ? 'bi-mic-fill' : 'bi bi-mic') "></i>{{peer.value.socketId}}
+            [ngClass]="peer.value.userMuted ? 'bi bi-mic-mute' : (getPeerAudioStreamActive(peer.value.socketId) ? 'bi-mic-fill' : 'bi bi-mic') "></i>
+            {{peer.value.displayName || peer.value.socketId}}
             <br>
             <input class="form-range" type="range" min="0" max="1" step="0.001"
                    [value]="peer.value.volume" (input)="adjustVolume($event, peer.value.socketId)"
@@ -38,11 +40,17 @@
     </div>
   </div>
   <div>
+    <div>
+      <label for="display-name">Display Name</label>
+      <input class="form-control" type="text" id="display-name" [(ngModel)]="this.channel.userStore.displayName"
+             (input)="changeName($event)">
+    </div>
     <div>Current Volume: <span #audioMeter></span></div>
     <div>
       <label for="noise-gate">Noise Gate Level {{channel.userStore.noiseGateValue}}</label>
       <input class="form-range" type="range" min="0" max="50" step="0.01" name="noise-gate" id="noise-gate"
-             [value]="channel.userStore.noiseGateValue" (input)="adjustNoiseGate($event)"></div>
+             [value]="channel.userStore.noiseGateValue" (input)="adjustNoiseGate($event)">
+    </div>
   </div>
 
 

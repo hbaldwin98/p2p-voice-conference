@@ -83,10 +83,15 @@ export class WebRTCService {
     });
 
     this.socket.on('user-talking', (data: any) => {
-      if (this.channel.peers[data.userId])
-        this.channel.peers[data.userId].userTalking = data.userTalking;
+      if (this.channel.peers[data.userId]) this.channel.peers[data.userId].userTalking = data.userTalking;
+    });
+
+    this.socket.on('user-change-name', (data: any) => {
+      console.log(data);
+      if (this.channel.peers[data.userId]) this.channel.peers[data.userId].displayName = data.name;
     });
   }
+
 
   // initializes the local stream
   // this must be called BEFORE a WEB RTC offer/answer is sent

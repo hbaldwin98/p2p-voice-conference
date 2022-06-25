@@ -61,6 +61,10 @@ export class ChannelComponent implements OnInit {
     this.channel.userStore.noiseGateValue = e.target.value;
   }
 
+  changeName(e: any) {
+    this.socket.emit('user-change-name', e.target.value);
+  }
+
   startConnection() {
     this.webRTC.initializeSocketEvents().then(() => {
       this.webRTC.initializeLocalStream().then(() => {
