@@ -51,6 +51,10 @@ io.on('connect', (socket: any) => {
         console.log(`${socket.id} is ready to connect`);
         io.to(socket.id).emit('ready-to-connect', peersWithoutSocketId(socket.id));
     });
+
+    socket.on('user-toggled-mic', (mic: boolean) => {
+      socket.broadcast.emit('user-toggled-mic', {userId: socket.id, mic});
+    });
 });
 
 server.listen(PORT, () => {

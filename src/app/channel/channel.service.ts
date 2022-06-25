@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { IUserStore } from '../shared/models/userStore';
-import {Peer} from "../shared/models/peer";
+import { Peer } from "../shared/models/peer";
 
 @Injectable({
   providedIn: 'root'
@@ -8,9 +8,7 @@ import {Peer} from "../shared/models/peer";
 export class ChannelService {
   peers: { [key: string]: Peer } = {};
   userStore: IUserStore = {
-    socketId: '',
-    localStream: new MediaStream,
-    micMuted: true
+    socketId: '', localStream: new MediaStream, micMuted: true
   }
 
   constructor() {

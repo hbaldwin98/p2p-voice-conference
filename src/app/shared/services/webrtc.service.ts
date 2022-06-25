@@ -24,7 +24,13 @@ export class WebRTCService {
   configuration = {
     iceServers: [ {
       urls: 'stun:stun.l.google.com:13902',
-    }, ],
+    }, {
+      urls: "turn:openrelay.metered.ca:80", username: "openrelayproject", credential: "openrelayproject",
+    }, {
+      urls: "turn:openrelay.metered.ca:443", username: "openrelayproject", credential: "openrelayproject",
+    }, {
+      urls: "turn:openrelay.metered.ca:443?transport=tcp", username: "openrelayproject", credential: "openrelayproject",
+    } ]
   };
 
   constructor(private channel: ChannelService, public socket: Socket) {}
@@ -46,7 +52,7 @@ export class WebRTCService {
         }
       });
     });
-    
+
     this.socket.on('user-disconnected', (userId: any) => {
       console.log('user disconnected', userId);
       this.channel.peers[userId].rtcPeerConnection.close();
@@ -69,6 +75,10 @@ export class WebRTCService {
           break
       }
     });
+
+    this.socket.on('user-toggled-mic', (data: any) => {
+      this.channel.peers[data.userId].userMuted = data.mic;
+    });
   }
 
   async initializeLocalStream() {
@@ -76,11 +86,50 @@ export class WebRTCService {
       .getUserMedia(this.defaultConstraints)
       .then((stream) => {
         console.log('initializing local stream');
-        this.channel.userStore.localStream = stream;
+        const FILTER_PARAMS = [ 'type', 'frequency', 'gain', 'detune', 'Q' ];
+        const COMPRESSOR_PARAMS = [ 'threshold', 'knee', 'ratio', 'attack', 'release' ];
+        const DEFAULT_OPTIONS = {
+          threshold: -50,
+          knee: 40,
+          ratio: 12,
+          reduction: -20,
+          attack: 0,
+          release: 0.25,
+          Q: 8.30,
+          frequency: 355,
+          gain: 3.0,
+          type: 'bandpass',
+        };
+        let audioCtx = new window.AudioContext();
+        // let compressorPramas = this.selectParams(DEFAULT_OPTIONS, COMPRESSOR_PARAMS);
+        // let filterPramas = this.selectParams(DEFAULT_OPTIONS, FILTER_PARAMS);
+        // let compressor = new DynamicsCompressorNode(audioCtx, compressorPramas);
+        // let filter = new BiquadFilterNode(audioCtx, filterPramas);
+        let gain = new GainNode(audioCtx, { gain: 3 });
+        let source = audioCtx.createMediaStreamSource(stream);
+        let dest = audioCtx.createMediaStreamDestination();
+        source.connect(gain);
+        gain.connect(dest);
+        // source.connect(filter);
+        // source.connect(compressor);
+        // filter.connect(dest);
+        // compressor.connect(dest);
+
+        this.channel.userStore.localStream = dest.stream;
+
       })
       .catch((err) => {
         console.log('An error occured attempting to get the camera stream: ' + err,);
       });
+  }
+
+  selectParams(object: any, filterArr: any) {
+    return Object.keys(object).reduce((opt: any, p) => {
+      if (filterArr.includes(p)) {
+        opt[p] = object[p];
+      }
+      return opt;
+    }, {});
   }
 
   async createPeerConnection(socketId: string) {
@@ -88,7 +137,7 @@ export class WebRTCService {
 
     // receiving tracks
     const remoteStream = new MediaStream();
-    this.channel.peers[socketId] = { socketId, remoteStream, rtcPeerConnection }
+    this.channel.peers[socketId] = new Peer(socketId, remoteStream, rtcPeerConnection);
     let peer = this.channel.peers[socketId];
 
     // add our stream to peer connection

@@ -3,25 +3,38 @@
   <div class="row">
     <table class="table table-bordered table-hover table-dark">
       <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">User Id</th>
-          <th></th>
-        </tr>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">User Id</th>
+        <th></th>
+      </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">1</th>
-          <td>{{channel.userStore.socketId}} <span>(You)</span></td>
-          <td><button class="btn btn-dark" (click)="micStatus()"><i [ngClass]="getMicStatus() ? 'bi bi-mic' : 'bi bi-mic-mute'"></i></button></td>
-        </tr>
-        <tr *ngFor="let peer of channel.peers | keyvalue; let i = index">
-          <th scope="row">{{i+2}}</th>
-          <td>{{peer.value.socketId}}</td>
-          <td></td>
-        </tr>
+      <tr>
+        <th scope="row">1</th>
+        <td>{{channel.userStore.socketId}} <span>(You)</span></td>
+        <td>
+          <button class="btn btn-dark" (click)="toggleMicStatus()"><i
+            [ngClass]="getMicStatus() ? 'bi bi-mic' : 'bi bi-mic-mute'"></i></button>
+        </td>
+      </tr>
+      <tr *ngFor="let peer of channel.peers | keyvalue; let i = index">
+        <th scope="row">{{i + 2}}</th>
+        <td><i
+          [ngClass]="peer.value.userMuted ? 'bi bi-mic-mute' : 'bi bi-mic' "></i>{{peer.value.socketId}}
+          <br>
+          <input socket-id="peer.value.socketId" class="form-range" type="range" min="1" max="100"
+                 value="{{peer.value.volume*100}}"  (input)="adjustVolume($event, peer.value.socketId)"
+                 [disabled]="peer.value.localMuted"></td>
+        <td>
+          <button class="btn btn-dark" (click)="toggleLocalMuteStatus(peer.value.socketId)"><i
+            [ngClass]="!getLocalMuteStatus(peer.value.socketId) ? 'bi bi-volume-up' : 'bi bi-volume-mute'"></i></button>
+        </td>
+      </tr>
       </tbody>
     </table>
   </div>
-  <audio *ngFor="let peer of channel.peers | keyvalue" [srcObject]="peer.value.remoteStream" autoplay>Test</audio>
+  <audio *ngFor="let peer of channel.peers | keyvalue" socket-id="peer.value.socketId"
+         [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream" autoplay>Test
+  </audio>
 </div>
