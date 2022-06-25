@@ -86,36 +86,36 @@ export class WebRTCService {
       .getUserMedia(this.defaultConstraints)
       .then((stream) => {
         console.log('initializing local stream');
-        const FILTER_PARAMS = [ 'type', 'frequency', 'gain', 'detune', 'Q' ];
-        const COMPRESSOR_PARAMS = [ 'threshold', 'knee', 'ratio', 'attack', 'release' ];
-        const DEFAULT_OPTIONS = {
-          threshold: -50,
-          knee: 40,
-          ratio: 12,
-          reduction: -20,
-          attack: 0,
-          release: 0.25,
-          Q: 8.30,
-          frequency: 355,
-          gain: 3.0,
-          type: 'bandpass',
-        };
-        let audioCtx = new window.AudioContext();
-        // let compressorPramas = this.selectParams(DEFAULT_OPTIONS, COMPRESSOR_PARAMS);
-        // let filterPramas = this.selectParams(DEFAULT_OPTIONS, FILTER_PARAMS);
-        // let compressor = new DynamicsCompressorNode(audioCtx, compressorPramas);
-        // let filter = new BiquadFilterNode(audioCtx, filterPramas);
-        let gain = new GainNode(audioCtx, { gain: 3 });
-        let source = audioCtx.createMediaStreamSource(stream);
-        let dest = audioCtx.createMediaStreamDestination();
-        source.connect(gain);
-        gain.connect(dest);
+        // const FILTER_PARAMS = [ 'type', 'frequency', 'gain', 'detune', 'Q' ];
+        // const COMPRESSOR_PARAMS = [ 'threshold', 'knee', 'ratio', 'attack', 'release' ];
+        // const DEFAULT_OPTIONS = {
+        //   threshold: -50,
+        //   knee: 40,
+        //   ratio: 12,
+        //   reduction: -20,
+        //   attack: 0,
+        //   release: 0.25,
+        //   Q: 8.30,
+        //   frequency: 355,
+        //   gain: 3.0,
+        //   type: 'bandpass',
+        // };
+        // let audioCtx = new window.AudioContext();
+        // // let compressorPramas = this.selectParams(DEFAULT_OPTIONS, COMPRESSOR_PARAMS);
+        // // let filterPramas = this.selectParams(DEFAULT_OPTIONS, FILTER_PARAMS);
+        // // let compressor = new DynamicsCompressorNode(audioCtx, compressorPramas);
+        // // let filter = new BiquadFilterNode(audioCtx, filterPramas);
+        // let gain = new GainNode(audioCtx, { gain: 3 });
+        // let source = audioCtx.createMediaStreamSource(stream);
+        // let dest = audioCtx.createMediaStreamDestination();
+        // source.connect(gain);
+        // gain.connect(dest);
         // source.connect(filter);
         // source.connect(compressor);
         // filter.connect(dest);
         // compressor.connect(dest);
 
-        this.channel.userStore.localStream = dest.stream;
+        this.channel.userStore.localStream = stream;
 
       })
       .catch((err) => {
