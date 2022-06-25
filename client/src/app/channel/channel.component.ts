@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {Socket} from "ngx-socket-io";
+import {WebRTCService} from "../shared/services/webrtc.service";
+import {ChannelService} from "./channel.service";
 
 @Component({
   selector: 'app-channel',
@@ -7,19 +9,27 @@ import {Socket} from "ngx-socket-io";
   styleUrls: ['./channel.component.sass']
 })
 export class ChannelComponent implements OnInit {
-  socketId: string = "";
-  peers: string[] = [];
-
-  constructor(public socket: Socket) { }
+  constructor(private webRTC: WebRTCService, public channel: ChannelService, private socket: Socket) { }
 
   ngOnInit(): void {
-    this.initializeSocketEvents();
+    if (this.channel.userStore.socketId === '') {
+      this.startConnection();
+    }
   }
 
-  initializeSocketEvents() {
-    this.socket.on('connected', (socket: any) => {
-      console.log('your socket id is', socket);
-      this.socketId = socket;
+  getMicStatus(): boolean {
+    return this.channel.userStore.micMuted;
+  }
+
+  micStatus() {
+    this.channel.userStore.micMuted = !this.channel.userStore.micMuted;
+    this.channel.userStore.localStream.getAudioTracks()[0].enabled = this.channel.userStore.micMuted;
+  }
+
+  async startConnection() {
+    this.webRTC.initializeSocketEvents().then(() => {
+      this.webRTC.initializeLocalStream();
     });
+
   }
 }

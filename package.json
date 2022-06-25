@@ -5,7 +5,7 @@
   "main": "./server/app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:server": "nodemon ./server/app.ts",
+    "start:server": "nodemon ./app.ts",
     "start:client": "cd client && npm run start"
   },
   "author": "",

@@ -3,7 +3,6 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import {SocketIoConfig, SocketIoModule} from "ngx-socket-io";
 import {ChannelModule} from "./channel/channel.module";
 import {SharedModule} from "./shared/shared.module";
 

@@ -9,7 +9,7 @@ const config: SocketIoConfig = { url: environment.socketServer, options: {} };
   declarations: [],
   imports: [
     CommonModule,
-    SocketIoModule.forRoot(config),
+    SocketIoModule.forRoot(config)
   ],
   exports: [SocketIoModule]
 })

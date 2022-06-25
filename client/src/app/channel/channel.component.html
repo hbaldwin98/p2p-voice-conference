@@ -1,23 +1,27 @@
-<div class="container">
+<div class="container text-center">
   <h1>Channel</h1>
   <div class="row">
     <table class="table table-bordered table-hover table-dark">
       <thead>
         <tr>
           <th scope="col">#</th>
-          <th scope="col">User Ids</th>
+          <th scope="col">User Id</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
         <tr>
           <th scope="row">1</th>
-          <td>{{socketId}}</td>
+          <td>{{channel.userStore.socketId}} <span>(You)</span></td>
+          <td><button class="btn btn-dark" (click)="micStatus()"><i [ngClass]="getMicStatus() ? 'bi bi-mic' : 'bi bi-mic-mute'"></i></button></td>
         </tr>
-        <tr *ngFor="let peer of peers; let i = index">
+        <tr *ngFor="let peer of channel.peers | keyvalue; let i = index">
           <th scope="row">{{i+2}}</th>
-          <td>{{peer}}</td>
+          <td>{{peer.value.socketId}}</td>
+          <td></td>
         </tr>
       </tbody>
     </table>
   </div>
+  <audio *ngFor="let peer of channel.peers | keyvalue" [srcObject]="peer.value.remoteStream" autoplay>Test</audio>
 </div>
