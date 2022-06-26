@@ -16,7 +16,8 @@ export class ChannelService {
     volume: 0,
     shouldVolumeTimeout: true,
     volumeRelease: 100,
-    noiseGateValue: 25
+    noiseGateValue: 25,
+    isSharingScreen: false
   }
 
   constructor() {

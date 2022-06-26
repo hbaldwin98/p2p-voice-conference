@@ -7,6 +7,7 @@
   volume: number,
   shouldVolumeTimeout: boolean,
   volumeRelease: number,
-  noiseGateValue: number
+  noiseGateValue: number,
+  isSharingScreen: boolean
 }
 

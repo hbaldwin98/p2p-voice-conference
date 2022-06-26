@@ -21,6 +21,12 @@ export class WebRTCService {
     }, video: false,
   };
 
+  screenSharingConstraints = {
+    video: {
+      frameRate: 60, width: 1920, height: 1080
+    }, audio: false
+  }
+
   configuration = {
     iceServers: [ {
       urls: 'stun:stun.l.google.com:13902',
@@ -103,35 +109,54 @@ export class WebRTCService {
       });
   }
 
-  initializeScreenShare() {
+  async initializeScreenShare() {
+    if (this.channel.userStore.isSharingScreen) {
+      const videoTracks = this.channel.userStore.localStream.getVideoTracks();
+      videoTracks.forEach(videoTrack => {
+        videoTrack.stop();
+        this.channel.userStore.localStream.removeTrack(videoTrack);
+      });
+
+      for (const peerId in this.channel.peers) {
+        console.log('renogiation offer with peer: ', peerId);
+        await this.initializePeerConnection(peerId);
+      }
+
+      this.channel.userStore.isSharingScreen = false;
+      return ;
+    }
+
     return navigator.mediaDevices
-      .getDisplayMedia({ video: true, audio: false })
+      .getDisplayMedia(this.screenSharingConstraints)
       .then(this.onScreenShareGranted.bind(this))
   }
 
-  onScreenShareGranted(stream: MediaStream) {
-    this.channel.userStore.localStream.addTrack(stream.getVideoTracks()[0]);
+  async onScreenShareGranted(stream: MediaStream) {
+    const videoTracks = stream.getVideoTracks()[0]
+    await this.channel.userStore.localStream.addTrack(videoTracks);
 
-    for (let peer in this.channel.peers) {
-      console.log('renogiation offer with peer: ', peer);
-      this.initializePeerConnection(peer);
+    for (const peerId in this.channel.peers) {
+      await this.channel.peers[peerId].rtcPeerConnection.addTrack(videoTracks, this.channel.userStore.localStream);
+      console.log('renogiation offer with peer: ', peerId);
+      await this.initializePeerConnection(peerId);
     }
+
+    this.channel.userStore.isSharingScreen = true;
   }
 
   onMicrophoneGranted(stream: MediaStream) {
     console.log('initializing local stream');
     const audioContext = new AudioContext();
-
     const source = audioContext.createMediaStreamSource(stream);
     const destination = audioContext.createMediaStreamDestination();
-
-
     const analyser = audioContext.createAnalyser();
+    const javascriptNode = audioContext.createScriptProcessor(2048, 2, 2);
+    this.channel.userStore.analyser = analyser;
+
     analyser.minDecibels = -100;
     analyser.maxDecibels = 0;
     analyser.smoothingTimeConstant = 0.85;
 
-    let javascriptNode = audioContext.createScriptProcessor(2048, 2, 2);
 
     javascriptNode.onaudioprocess = async () => {
       let db = await this.getVolumeInDb()
@@ -164,8 +189,6 @@ export class WebRTCService {
       this.channel.userStore.volume = db;
     }
 
-
-    this.channel.userStore.analyser = analyser;
     source.connect(javascriptNode);
     source.connect(analyser);
     javascriptNode.connect(destination);
