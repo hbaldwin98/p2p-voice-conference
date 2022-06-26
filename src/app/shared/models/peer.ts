@@ -5,8 +5,9 @@
   rtcPeerConnection: RTCPeerConnection;
   volume: number;
   localMuted: boolean;
-  userMuted: boolean;
-  userTalking: boolean;
+  isMuted: boolean;
+  isTalking: boolean;
+  isSharingScreen: boolean;
 }
 
 export class Peer implements IPeer {
@@ -16,8 +17,9 @@ export class Peer implements IPeer {
   rtcPeerConnection: RTCPeerConnection;
   volume: number;
   localMuted = false;
-  userMuted = false
-  userTalking = false;
+  isMuted = false
+  isTalking = false;
+  isSharingScreen = false;
 
   constructor(socketId: string, remoteStream: any, rtcPeerConnection: RTCPeerConnection, volume: number = 0.5) {
     this.socketId = socketId;

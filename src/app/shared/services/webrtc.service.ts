@@ -85,16 +85,21 @@ export class WebRTCService {
     });
 
     this.socket.on('user-toggled-mic', (data: any) => {
-      this.channel.peers[data.userId].userMuted = data.mic;
+      this.channel.peers[data.userId].isMuted = data.mic;
     });
 
     this.socket.on('user-talking', (data: any) => {
-      if (this.channel.peers[data.userId]) this.channel.peers[data.userId].userTalking = data.userTalking;
+      if (this.channel.peers[data.userId]) this.channel.peers[data.userId].isTalking = data.userTalking;
     });
 
     this.socket.on('user-change-name', (data: any) => {
       console.log(data);
       if (this.channel.peers[data.userId]) this.channel.peers[data.userId].displayName = data.name;
+    });
+
+    this.socket.on('user-screen-sharing', (data: any) => {
+      if (this.channel.peers[data.userId])
+        this.channel.peers[data.userId].isSharingScreen = data.screenSharing;
     });
   }
 
@@ -123,6 +128,7 @@ export class WebRTCService {
       }
 
       this.channel.userStore.isSharingScreen = false;
+      this.socket.emit('user-screen-sharing', false);
       return;
     }
 
@@ -140,6 +146,7 @@ export class WebRTCService {
     }
 
     this.channel.userStore.isSharingScreen = true;
+    this.socket.emit('user-screen-sharing', true);
   }
 
   onMicrophoneGranted(stream: MediaStream) {

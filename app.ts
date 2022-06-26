@@ -64,6 +64,10 @@ io.on('connect', (socket: any) => {
       socket.broadcast.emit('user-change-name', {userId: socket.id, name});
       console.log(`${socket.id} changed name to ${name}`);
     });
+
+    socket.on('user-screen-sharing', (screenSharing: boolean) => {
+      socket.broadcast.emit('user-screen-sharing', {userId: socket.id, screenSharing});
+    });
 });
 
 server.listen(PORT, () => {
