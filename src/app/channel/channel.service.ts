@@ -13,6 +13,7 @@ export class ChannelService {
     localStream: new MediaStream,
     screenSharingStream: new MediaStream,
     micActive: true,
+    globalMute: false,
     analyser: new AnalyserNode(new AudioContext()),
     volume: 0,
     shouldVolumeTimeout: true,

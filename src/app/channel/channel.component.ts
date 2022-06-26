@@ -15,6 +15,7 @@ export class ChannelComponent implements OnInit {
 
   get selfIsTalking() { return this.channel.userStore.localStream.getAudioTracks()[0]?.enabled }
   get selfMicActive() { return this.channel.userStore.micActive; }
+  get selfGlobalMute() { return this.channel.userStore.globalMute; }
 
   constructor(private webRTC: WebRTCService, public channel: ChannelService, private socket: Socket, private modal: BsModalService) { }
 
@@ -46,6 +47,16 @@ export class ChannelComponent implements OnInit {
     this.socket.emit('user-toggled-mic', !this.channel.userStore.micActive);
   }
 
+  toggleGlobalMute() {
+    this.channel.userStore.globalMute = !this.channel.userStore.globalMute;
+
+    //for each peer, disable their audio track
+    for (const peer in this.channel.peers) {
+      const p = this.channel.peers[peer];
+      p.remoteStream.getAudioTracks()[0].enabled = !this.channel.userStore.globalMute;
+    }
+  }
+
   toggleLocalMuteStatus(peer: Peer) {
     peer.localMuted = !peer.localMuted;
     peer.remoteStream.getAudioTracks()[0].enabled = !peer.localMuted;
@@ -73,10 +84,11 @@ export class ChannelComponent implements OnInit {
     this.webRTC.initializeScreenShare();
   }
 
-  openScreenShare(peer: Peer) {
+  openScreenShare(id: string, stream: MediaStream) {
     const initialState: ModalOptions = {
       initialState: {
-        peer: peer
+        id,
+        stream
       }
     }
     this.modalRef = this.modal.show(ChannelScreenShareComponent, initialState);

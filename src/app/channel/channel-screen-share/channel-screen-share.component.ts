@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from "ngx-bootstrap/modal";
 import { Peer } from "../../shared/models/peer";
+import { Socket } from "ngx-socket-io";
 
 @Component({
   selector: 'app-channel-screen-share',
@@ -8,12 +9,19 @@ import { Peer } from "../../shared/models/peer";
   styleUrls: ['./channel-screen-share.component.sass']
 })
 export class ChannelScreenShareComponent implements OnInit {
-  peer!: Peer
-  remoteStream!: MediaStream;
-  constructor(public modalRef: BsModalRef) { }
+  stream?: MediaStream;
+  id?: string;
+  constructor(public modalRef: BsModalRef, private socket: Socket) { }
 
   ngOnInit(): void {
-    this.remoteStream = this.peer.remoteStream;
+    console.log('viewing screen for ', this.id);
+    this.socket.on('user-screen-sharing', (data: any) => {
+      if (!data.screenSharing) {
+        if (data.userId === this.id) {
+          this.modalRef.hide();
+        }
+      }
+    });
   }
 
 }

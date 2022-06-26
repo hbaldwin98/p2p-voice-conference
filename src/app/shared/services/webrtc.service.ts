@@ -22,9 +22,11 @@ export class WebRTCService {
   };
 
   screenSharingConstraints = {
-    video: {
-      frameRate: 60, width: 1920, height: 1080
-    }, audio: false
+    video:{
+      width: { ideal: 1920, max: 1920 },
+      height: { ideal: 1080, max: 1080 },
+      frameRate: {ideal: 60}
+    },
   }
 
   configuration = {
@@ -98,8 +100,7 @@ export class WebRTCService {
     });
 
     this.socket.on('user-screen-sharing', (data: any) => {
-      if (this.channel.peers[data.userId])
-        this.channel.peers[data.userId].isSharingScreen = data.screenSharing;
+      if (this.channel.peers[data.userId]) this.channel.peers[data.userId].isSharingScreen = data.screenSharing;
     });
   }
 
@@ -169,7 +170,7 @@ export class WebRTCService {
       let noiseGate = this.channel.userStore.noiseGateValue;
       let timeout;
 
-      if (this.channel.userStore.micActive) {
+      if (!this.channel.userStore.globalMute && this.channel.userStore.micActive) {
         if (db < noiseGate) {
           if (shouldTimeout && db < noiseGate - 3) {
             this.channel.userStore.shouldVolumeTimeout = false;
@@ -289,7 +290,6 @@ export class WebRTCService {
             arr[i] += '\r\nb=AS:10000';
           }
         });
-        console.log(arr);
 
         sdp.sdp = arr.join('\r\n');
         return sdp;
@@ -324,7 +324,6 @@ export class WebRTCService {
             arr[i] += '\r\nb=AS:10000';
           }
         });
-        console.log(arr);
 
         sdp.sdp = arr.join('\r\n');
         return sdp;
@@ -346,6 +345,18 @@ export class WebRTCService {
       console.log("handling webRTC answer", peerData);
       if (peerData.answer) await peer.rtcPeerConnection.setRemoteDescription(peerData.answer);
     }
+    // ensure our peer audio tracks status are correct
+    // e.g. if the local peer has muted their stream, retain the mute.
+    if (this.channel.userStore.globalMute) {
+      for (const peerId in this.channel.peers) {
+        console.log('muting peer', peerId);
+        this.channel.peers[peerId].remoteStream.getAudioTracks()[0].enabled = false;
+      }
+    } else {
+      for (const peerId in this.channel.peers) {
+        this.channel.peers[peerId].remoteStream.getAudioTracks()[0].enabled = !this.channel.peers[peerId].localMuted;
+      }
+    }
   }
 
   // once we receive an ice candidate, we add it to the peer connection
@@ -357,7 +368,6 @@ export class WebRTCService {
         await peer.rtcPeerConnection.addIceCandidate(peerData.candidate);
       } catch (err) {
         console.log(`Error received while attempting to add received ice candidate`, err);
-        console.log(peerData);
       }
     }
   }

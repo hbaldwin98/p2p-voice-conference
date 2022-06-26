@@ -66,7 +66,7 @@ io.on('connect', (socket: any) => {
     });
 
     socket.on('user-screen-sharing', (screenSharing: boolean) => {
-      socket.broadcast.emit('user-screen-sharing', {userId: socket.id, screenSharing});
+      io.emit('user-screen-sharing', {userId: socket.id, screenSharing});
     });
 });
 

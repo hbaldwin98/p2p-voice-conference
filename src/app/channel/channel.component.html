@@ -15,10 +15,16 @@
           <th scope="row">1</th>
           <td>{{this.channel.userStore.displayName || channel.userStore.socketId}} <span>(You)</span>
             <button class="btn btn-dark" (click)="toggleScreenSharing()"><i class="bi bi-boombox-fill"></i></button>
+            <button *ngIf="channel.userStore.isSharingScreen" class="btn btn-sm btn-danger"
+                    (click)="openScreenShare(channel.userStore.socketId, channel.userStore.screenSharingStream)">SHARING SCREEN
+            </button>
           </td>
           <td>
-            <button class="btn btn-dark" (click)="toggleMicActive()"><i
-              [ngClass]="selfMicActive ? (selfIsTalking ? 'bi-mic-fill' : 'bi bi-mic') : 'bi bi-mic-mute'"></i>
+            <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleMicActive()"><i
+              [ngClass]="(!selfGlobalMute && selfMicActive) ? (selfIsTalking ? 'bi-mic-fill' : 'bi bi-mic') : 'bi bi-mic-mute'"></i>
+            </button>
+            <button class="btn btn-dark" (click)="toggleGlobalMute()"><i
+              [ngClass]="selfGlobalMute ? 'bi bi-volume-mute' : 'bi bi-volume-up'"></i>
             </button>
           </td>
         </tr>
@@ -28,13 +34,15 @@
             [ngClass]="peer.value.isMuted ? 'bi bi-mic-mute' : (getPeerTalking(peer.value) ? 'bi-mic-fill' : 'bi bi-mic') ">
           </i>
             {{peer.value.displayName || peer.value.socketId}}
-            <button *ngIf="peer.value.isSharingScreen" class="btn btn-sm btn-danger" (click)="openScreenShare(peer.value)">SHARING SCREEN</button>
+            <button *ngIf="peer.value.isSharingScreen" class="btn btn-sm btn-danger"
+                    (click)="openScreenShare(peer.value.socketId, peer.value.remoteStream)">SHARING SCREEN
+            </button>
             <br>
             <input class="form-range" type="range" min="0" max="1" step="0.001"
                    [value]="peer.value.volume" (input)="adjustVolume($event, peer.value)"
                    [disabled]="peer.value.localMuted"></td>
           <td>
-            <button class="btn btn-dark" (click)="toggleLocalMuteStatus(peer.value)"><i
+            <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleLocalMuteStatus(peer.value)"><i
               [ngClass]="!getLocalMuteStatus(peer.value) ? 'bi bi-volume-up' : 'bi bi-volume-mute'"></i>
             </button>
           </td>
@@ -57,12 +65,9 @@
     </div>
   </div>
 
-  <!--  <audio *ngFor="let peer of channel.peers | keyvalue" [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream" autoplay>Test</audio>-->
   <ng-container *ngFor="let peer of channel.peers | keyvalue">
     <audio *ngIf="!!peer.value.remoteStream.active" [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream"
            autoplay></audio>
   </ng-container>
-  <video [volume]="0" *ngIf="this.channel.userStore.screenSharingStream.active"
-         [srcObject]="this.channel.userStore.screenSharingStream" autoplay></video>
 </div>
 
