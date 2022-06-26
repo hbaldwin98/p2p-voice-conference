@@ -2,6 +2,7 @@
   displayName: string,
   socketId: string,
   localStream: MediaStream,
+  screenSharingStream: MediaStream,
   micActive: boolean,
   analyser: AnalyserNode
   volume: number,

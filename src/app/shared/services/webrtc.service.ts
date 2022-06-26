@@ -111,10 +111,10 @@ export class WebRTCService {
 
   async initializeScreenShare() {
     if (this.channel.userStore.isSharingScreen) {
-      const videoTracks = this.channel.userStore.localStream.getVideoTracks();
+      const videoTracks = this.channel.userStore.screenSharingStream.getVideoTracks();
       videoTracks.forEach(videoTrack => {
         videoTrack.stop();
-        this.channel.userStore.localStream.removeTrack(videoTrack);
+        console.log("removing track", videoTrack);
       });
 
       for (const peerId in this.channel.peers) {
@@ -123,7 +123,7 @@ export class WebRTCService {
       }
 
       this.channel.userStore.isSharingScreen = false;
-      return ;
+      return;
     }
 
     return navigator.mediaDevices
@@ -132,11 +132,9 @@ export class WebRTCService {
   }
 
   async onScreenShareGranted(stream: MediaStream) {
-    const videoTracks = stream.getVideoTracks()[0]
-    await this.channel.userStore.localStream.addTrack(videoTracks);
+    this.channel.userStore.screenSharingStream = stream;
 
     for (const peerId in this.channel.peers) {
-      await this.channel.peers[peerId].rtcPeerConnection.addTrack(videoTracks, this.channel.userStore.localStream);
       console.log('renogiation offer with peer: ', peerId);
       await this.initializePeerConnection(peerId);
     }
@@ -214,22 +212,36 @@ export class WebRTCService {
     return Math.round(db * 100) / 100;
   }
 
-
   // creates a peer connection with a given peer
   createPeerConnection(socketId: string) {
     let rtcPeerConnection = new RTCPeerConnection(this.configuration);
 
     // receiving tracks
     const remoteStream = new MediaStream();
-    this.channel.peers[socketId] = new Peer(socketId, remoteStream, rtcPeerConnection);
+    if (this.channel.peers[socketId]) {
+      this.channel.peers[socketId].rtcPeerConnection = rtcPeerConnection;
+      this.channel.peers[socketId].remoteStream = remoteStream;
+    } else {
+      this.channel.peers[socketId] = new Peer(socketId, remoteStream, rtcPeerConnection);
+    }
+
     let peer = this.channel.peers[socketId];
 
     // add our stream to peer connection
     const localStream = this.channel.userStore.localStream;
+    const screenSharingStream = this.channel.userStore.screenSharingStream;
+
     if (localStream) {
       localStream.getTracks().forEach((track: any) => {
-        console.log(localStream);
+        console.log('adding local track: ', track);
         peer.rtcPeerConnection.addTrack(track, localStream);
+      });
+    }
+
+    if (screenSharingStream) {
+      screenSharingStream.getTracks().forEach((track: any) => {
+        console.log('adding screen track', track);
+        peer.rtcPeerConnection.addTrack(track, screenSharingStream);
       });
     }
 
@@ -262,12 +274,17 @@ export class WebRTCService {
     if (peer) {
       console.log("sending webRTC offer", peer);
       const offer = await peer.rtcPeerConnection.createOffer().then((sdp: any) => {
-        let arr = sdp.sdp.split('\r');
-        let ind = arr.findIndex((line: any) => line === '\na=fmtp:111 minptime=10;useinbandfec=1');
-        if (ind) {
-          arr[ind] = '\na=fmtp:111 minptime=10;useinbandfec=1; stereo=1; maxaveragebitrate=510000; cbr=1';
-        }
-        sdp.sdp = arr.join('\r');
+        let arr = sdp.sdp.split('\r\n');
+        arr.forEach((str: string, i: number) => {
+          if (/^a=fmtp:\d*/.test(str)) {
+            arr[i] = str + ';x-google-max-bitrate=10000;x-google-min-bitrate=0;x-google-start-bitrate=6000;minptime=10;useinbandfec=1; stereo=1; maxaveragebitrate=510000; cbr=1';
+          } else if (/^a=mid:(1|video)/.test(str)) {
+            arr[i] += '\r\nb=AS:10000';
+          }
+        });
+        console.log(arr);
+
+        sdp.sdp = arr.join('\r\n');
         return sdp;
       });
 
@@ -278,7 +295,6 @@ export class WebRTCService {
       });
     }
   }
-  ;
 
   // after receiving an offer, we exchange SDP information with the answer
   async handleWebRTCOffer(peerData: WebRTCAO) {
@@ -293,12 +309,17 @@ export class WebRTCService {
       }
       // create an answer to the offer
       const answer = await peer.rtcPeerConnection.createAnswer().then((sdp: any) => {
-        let arr = sdp.sdp.split('\r');
-        let ind = arr.findIndex((line: any) => line === '\na=fmtp:111 minptime=10;useinbandfec=1');
-        if (ind) {
-          arr[ind] = '\na=fmtp:111 minptime=10;useinbandfec=1; stereo=1; maxaveragebitrate=510000; cbr=1';
-        }
-        sdp.sdp = arr.join('\r');
+        let arr = sdp.sdp.split('\r\n');
+        arr.forEach((str: string, i: number) => {
+          if (/^a=fmtp:\d*/.test(str)) {
+            arr[i] = str + ';x-google-max-bitrate=10000;x-google-min-bitrate=0;x-google-start-bitrate=6000;minptime=10;useinbandfec=1; stereo=1; maxaveragebitrate=510000; cbr=1';
+          } else if (/^a=mid:(1|video)/.test(str)) {
+            arr[i] += '\r\nb=AS:10000';
+          }
+        });
+        console.log(arr);
+
+        sdp.sdp = arr.join('\r\n');
         return sdp;
       });
 
@@ -309,7 +330,6 @@ export class WebRTCService {
       });
     }
   }
-  ;
 
   // once we receive an answer, we set the answer as the remote description
   async handleWebRTCAnswer(peerData: WebRTCAO) {
@@ -320,7 +340,6 @@ export class WebRTCService {
       if (peerData.answer) await peer.rtcPeerConnection.setRemoteDescription(peerData.answer);
     }
   }
-  ;
 
   // once we receive an ice candidate, we add it to the peer connection
   async handleWebRTCCandidate(peerData: WebRTCAO) {
@@ -335,7 +354,6 @@ export class WebRTCService {
       }
     }
   }
-  ;
 
   // send WebRTC data to the peer
   sendWebRTCData(data: WebRTCAO) {

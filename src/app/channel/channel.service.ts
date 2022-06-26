@@ -11,6 +11,7 @@ export class ChannelService {
     displayName: '',
     socketId: '',
     localStream: new MediaStream,
+    screenSharingStream: new MediaStream,
     micActive: true,
     analyser: new AnalyserNode(new AudioContext()),
     volume: 0,

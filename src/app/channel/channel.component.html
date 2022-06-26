@@ -56,6 +56,9 @@
   </div>
 
 <!--  <audio *ngFor="let peer of channel.peers | keyvalue" [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream" autoplay>Test</audio>-->
-  <video *ngFor="let peer of channel.peers | keyvalue" [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream" autoplay></video>
+  <ng-container *ngFor="let peer of channel.peers | keyvalue">
+    <video *ngIf="!!peer.value.remoteStream.active"   [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream" autoplay></video>
+  </ng-container>
+  <video [volume]="0" *ngIf="this.channel.userStore.screenSharingStream.active" [srcObject]="this.channel.userStore.screenSharingStream" autoplay></video>
 </div>
 
