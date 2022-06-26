@@ -65,6 +65,10 @@ export class ChannelComponent implements OnInit {
     this.socket.emit('user-change-name', e.target.value);
   }
 
+  startScreenSharing() {
+    this.webRTC.initializeScreenShare();
+  }
+
   startConnection() {
     this.webRTC.initializeSocketEvents().then(() => {
       this.webRTC.initializeLocalStream().then(() => {

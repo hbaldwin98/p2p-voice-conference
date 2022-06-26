@@ -12,7 +12,7 @@
 export class Peer implements IPeer {
   socketId: string;
   displayName = '';
-  remoteStream: any;
+  remoteStream: MediaStream;
   rtcPeerConnection: RTCPeerConnection;
   volume: number;
   localMuted = false;

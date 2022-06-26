@@ -8,7 +8,7 @@ import { Peer } from "../models/peer";
   providedIn: 'root'
 })
 export class WebRTCService {
-  defaultConstraints = {
+  audioConstraints = {
     audio: {
       autoGainControl: false,
       channelCount: 2,
@@ -92,16 +92,30 @@ export class WebRTCService {
     });
   }
 
-
   // initializes the local stream
   // this must be called BEFORE a WEB RTC offer/answer is sent
   initializeLocalStream() {
     return navigator.mediaDevices
-      .getUserMedia(this.defaultConstraints)
+      .getUserMedia(this.audioConstraints)
       .then(this.onMicrophoneGranted.bind(this))
       .catch((err) => {
         console.log('An error occured attempting to get the camera stream: ' + err,);
       });
+  }
+
+  initializeScreenShare() {
+    return navigator.mediaDevices
+      .getDisplayMedia({ video: true, audio: false })
+      .then(this.onScreenShareGranted.bind(this))
+  }
+
+  onScreenShareGranted(stream: MediaStream) {
+    this.channel.userStore.localStream.addTrack(stream.getVideoTracks()[0]);
+
+    for (let peer in this.channel.peers) {
+      console.log('renogiation offer with peer: ', peer);
+      this.initializePeerConnection(peer);
+    }
   }
 
   onMicrophoneGranted(stream: MediaStream) {

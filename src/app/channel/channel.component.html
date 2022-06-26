@@ -13,7 +13,9 @@
         <tbody>
         <tr>
           <th scope="row">1</th>
-          <td>{{this.channel.userStore.displayName || channel.userStore.socketId}} <span>(You)</span></td>
+          <td>{{this.channel.userStore.displayName || channel.userStore.socketId}} <span>(You)</span>
+            <button class="btn btn-dark" (click)="startScreenSharing()"><i class="bi bi-boombox-fill"></i></button>
+          </td>
           <td>
             <button class="btn btn-dark" (click)="toggleMicActive()"><i
               [ngClass]="getMicActive() ? (getLocalAudioStreamActive() ? 'bi-mic-fill' : 'bi bi-mic') : 'bi bi-mic-mute'"></i>
@@ -53,9 +55,7 @@
     </div>
   </div>
 
-
-  <audio *ngFor="let peer of channel.peers | keyvalue" socket-id="peer.value.socketId"
-         [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream" autoplay>Test
-  </audio>
+  <audio *ngFor="let peer of channel.peers | keyvalue" [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream" autoplay>Test</audio>
+  <video *ngFor="let peer of channel.peers | keyvalue" [srcObject]="peer.value.remoteStream" muted autoplay></video>
 </div>
 
