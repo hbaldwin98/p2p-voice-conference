@@ -15,7 +15,7 @@
   </button>
   <button mat-menu-item (click)="toggleGlobalMute()">
     <mat-icon color="warn">{{this.userStore.globalMute ? 'volume_off' : 'volume_up'}}</mat-icon>
-    <span>{{this.userStore.globalMute ? 'Un-Deafen' : 'Deafen'}}</span>
+    <span>{{this.userStore.globalMute ? 'Undeafen' : 'Deafen'}}</span>
   </button>
   <button mat-menu-item *ngIf="this.userStore.isSharingScreen" (click)="openScreenShare(this.userStore.socketId, this.userStore.screenSharingStream)">
     <mat-icon color="warn">screen_share</mat-icon>

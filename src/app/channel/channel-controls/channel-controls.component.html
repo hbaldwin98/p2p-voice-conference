@@ -1,25 +1,34 @@
-<!--<div class="row">-->
-<!--  <div class="col d-flex justify-content-center btn-group ">-->
-<!--    <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleMicActive()">-->
-<!--    </button>-->
-<!--    <button class="btn btn-dark" (click)="toggleGlobalMute()"><i-->
-<!--      [ngClass]="selfGlobalMute ? 'bi bi-volume-mute' : 'bi bi-volume-up'"></i>-->
-<!--    </button>-->
-<!--    <button class="btn btn-dark position-relative" (click)="toggleScreenSharing()">-->
-<!--      <i class="bi bi-boombox-fill"></i>-->
-<!--    </button>-->
-<!--  </div>-->
-<!--</div>-->
-<div class="row">
-  <div class="col d-flex justify-content-center btn-group">
-    <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleMicActive()">
-      <mat-icon [color]="selfIsTalking ? 'warn' : 'primary'">{{(!selfGlobalMute && selfMicActive) ? 'mic' : 'mic_off'}}</mat-icon>
-    </button>
-    <button class="btn btn-dark" (click)="toggleGlobalMute()">
-      <mat-icon>{{!selfGlobalMute ? 'volume_up' : 'volume_off'}}</mat-icon>
-    </button>
-    <button class="btn btn-dark position-relative " (click)="toggleScreenSharing()">
-      <mat-icon>screen_share</mat-icon>
-    </button>
+<div class="row bg-dark me-0 pe-0">
+  <div class="col bg-dark pe-0 me-0">
+    <div class="user d-flex ps-2 align-content-center">
+          <span class="user-picture d-flex justify-content-center align-content-center mt-2"
+                [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfGlobalMute) ? 'border-dark': 'border-danger')">
+      <img class="align-self-center " src="assets/picture-placeholder.png" alt="user profile picture">
+          </span>
+      <div class="user-name position-absolute">
+        {{(channel.userStore.displayName | slice:0:9) || 'Anonymous'}}
+      </div>
+    </div>
+  </div>
+  <div class="col" role="group" aria-label="user button controls">
+    <div class="btn-group d-flex justify-content-end">
+      <button [disabled]="selfGlobalMute"
+              class="btn btn-sm btn-dark d-flex align-items-center justify-content-center my-3"
+              (click)="toggleMicActive()" tooltip="{{selfMicActive ? 'Mute' : 'Unmute'}} Microphone" [delay]="250">
+        <mat-icon>{{(!selfGlobalMute && selfMicActive) ? 'mic' : 'mic_off'}}</mat-icon>
+      </button>
+      <button class="btn btn-sm btn-dark d-flex align-items-center justify-content-center my-3"
+              (click)="toggleGlobalMute()"
+              tooltip="{{!selfGlobalMute ? 'Deafen' : 'Undeafen'}} Sound" [delay]="250">
+        <mat-icon>{{!selfGlobalMute ? 'volume_up' : 'volume_off'}}</mat-icon>
+      </button>
+      <button class="btn btn-sm btn-dark d-flex align-items-center justify-content-center my-3" (click)="openSettings()"
+              tooltip="Open Settings" [delay]="250">
+        <mat-icon>settings</mat-icon>
+      </button>
+      <!--      <button class="btn btn-sm btn-dark d-flex align-items-center justify-content-center" (click)="toggleScreenSharing()">-->
+      <!--        <mat-icon>screen_share</mat-icon>-->
+      <!--      </button>-->
+    </div>
   </div>
 </div>

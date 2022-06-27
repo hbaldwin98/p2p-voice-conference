@@ -1,0 +1,29 @@
+.user
+  height: 100%
+  transition: all 0.1s ease-in
+
+  .user-picture
+    cursor: pointer
+    border-radius: 50%
+    border: 3px solid #3C3D48
+    width: 48px
+    height: 48px
+    overflow: hidden
+    transition: all 0.1s ease-in
+    img
+      width: 50px
+      height: 50px
+      pointer-events: none
+
+.user-name
+  left: 60px
+  top: 22.5px
+
+.user:hover
+  user-select: none
+
+.user-picture:hover
+  opacity: 0.8
+  box-shadow: 0 0 2px 2px #000
+  user-select: none
+

@@ -9,6 +9,7 @@ import { SocketIoConfig, SocketIoModule } from "ngx-socket-io";
 
 //BOOTSTRAP
 import { ModalModule } from "ngx-bootstrap/modal";
+import { TooltipModule } from "ngx-bootstrap/tooltip";
 
 //MATERIAL
 import { MatMenuModule } from "@angular/material/menu";
@@ -19,8 +20,8 @@ const config: SocketIoConfig = { url: environment.socketServer, options: {} };
 
 @NgModule({
   declarations: [],
-  imports: [ CommonModule, FormsModule, SocketIoModule.forRoot(config), ModalModule.forRoot(), MatMenuModule, MatIconModule, MatBadgeModule ],
-  exports: [ SocketIoModule, FormsModule, ModalModule, MatMenuModule, MatIconModule, MatBadgeModule ]
+  imports: [ CommonModule, FormsModule, SocketIoModule.forRoot(config), ModalModule.forRoot(), MatMenuModule, MatIconModule, MatBadgeModule, TooltipModule.forRoot() ],
+  exports: [ SocketIoModule, FormsModule, ModalModule, MatMenuModule, MatIconModule, MatBadgeModule, TooltipModule ]
 })
 export class SharedModule {
 }
