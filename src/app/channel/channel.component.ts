@@ -13,6 +13,8 @@ export class ChannelComponent implements OnInit {
   // @ViewChild('audioMeter', { static: false }) audioMeter!: ElementRef;
   modalRef?: BsModalRef;
 
+  get selfGlobalMute() { return this.channel.userStore.globalMute; }
+  get selfScreenSharing() { return this.channel.userStore.isSharingScreen; }
   get selfIsTalking() { return this.channel.userStore.localStream.getAudioTracks()[0]?.enabled }
   get selfMicActive() { return this.channel.userStore.micActive; }
 
@@ -32,7 +34,6 @@ export class ChannelComponent implements OnInit {
       });
     });
   }
-
 
   getLocalMuteStatus(peer: Peer): boolean {
     return peer.localMuted;

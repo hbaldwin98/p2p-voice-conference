@@ -330,6 +330,22 @@ export class WebRTCService {
       });
 
       await peer.rtcPeerConnection.setLocalDescription(answer);
+
+      // ensure our peer audio tracks status are correct
+      // e.g. if the local peer has muted their stream, retain the mute.
+      if (this.channel.userStore.globalMute) {
+        for (const peerId in this.channel.peers) {
+          console.log('muting peer', peerId);
+          this.channel.peers[peerId].remoteStream.getAudioTracks()[0].enabled = false;
+          const user = this.channel.userStore;
+          this.socket.emit('user-toggled-mic', user.micActive ? user.globalMute : user.micActive);
+        }
+      } else {
+        for (const peerId in this.channel.peers) {
+          this.channel.peers[peerId].remoteStream.getAudioTracks()[0].enabled = !this.channel.peers[peerId].localMuted;
+        }
+      }
+
       // send the answer to the caller
       this.sendWebRTCData({
         type: 'answer', answer: answer, socketId: peerData.sender, sender: this.channel.userStore.socketId,
@@ -351,6 +367,8 @@ export class WebRTCService {
       for (const peerId in this.channel.peers) {
         console.log('muting peer', peerId);
         this.channel.peers[peerId].remoteStream.getAudioTracks()[0].enabled = false;
+        const user = this.channel.userStore;
+        this.socket.emit('user-toggled-mic', user.micActive ? user.globalMute : user.micActive);
       }
     } else {
       for (const peerId in this.channel.peers) {

@@ -4,7 +4,7 @@
   <div class="row my-3">
     <ul class="list-group align-items-center pe-0">
       <li class="list-group-item list-group-item-dark user-channel d-flex align-items-center">{{(this.channel.userStore.displayName || 'You') | slice:0:15 }}
-        <span class="position-absolute user-picture d-flex justify-content-center" [ngClass]="selfIsTalking ? 'border-success' : (selfMicActive ? 'border-dark': 'border-danger')">
+        <span class="position-absolute user-picture d-flex justify-content-center" [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfGlobalMute) ? 'border-dark': 'border-danger')">
           <img class="align-self-center " src="assets/picture-placeholder.png" alt="user profile picture">
         </span>
       </li>
