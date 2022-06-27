@@ -12,13 +12,14 @@ const io = require('socket.io')(server, {
     }
 });
 
-let connectedPeers: any[] = [];
-
 app.use(express.static(__dirname + '/dist/'));
 
 app.get('/*', (req: any, res: any) => {
-    res.sendFile(__dirname + '/dist/index.html');
+  res.sendFile(__dirname + '/dist/index.html');
 });
+
+let connectedPeers: any[] = [];
+const peersWithoutSocketId = (socketId: string) => connectedPeers.filter((s) => s !== socketId);
 
 io.on('connect', (socket: any) => {
     connectedPeers.push(socket.id);
@@ -52,6 +53,7 @@ io.on('connect', (socket: any) => {
         io.to(socket.id).emit('ready-to-connect', peersWithoutSocketId(socket.id));
     });
 
+    // USER EVENTS  //
     socket.on('user-toggled-mic', (mic: boolean) => {
       socket.broadcast.emit('user-toggled-mic', {userId: socket.id, mic});
     });
@@ -66,6 +68,7 @@ io.on('connect', (socket: any) => {
     });
 
     socket.on('user-screen-sharing', (screenSharing: boolean) => {
+      console.log(`${socket.id} is ${screenSharing ? 'sharing' : 'not sharing'} screen`);
       io.emit('user-screen-sharing', {userId: socket.id, screenSharing});
     });
 });
@@ -73,5 +76,3 @@ io.on('connect', (socket: any) => {
 server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
-
-const peersWithoutSocketId = (socketId: string) => connectedPeers.filter((s) => s !== socketId);

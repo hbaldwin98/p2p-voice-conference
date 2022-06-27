@@ -1,73 +1,55 @@
-<div class="container text-center">
-  <h1>Channel</h1>
-  <div class="row">
-    <div class="table-response">
-      <table class="table table-bordered table-hover table-dark">
-        <thead>
-        <tr>
-          <th scope="col">#</th>
-          <th scope="col">User Id</th>
-          <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-          <th scope="row">1</th>
-          <td>{{this.channel.userStore.displayName || channel.userStore.socketId}} <span>(You)</span>
-            <button class="btn btn-dark" (click)="toggleScreenSharing()"><i class="bi bi-boombox-fill"></i></button>
-            <button *ngIf="channel.userStore.isSharingScreen" class="btn btn-sm btn-danger"
-                    (click)="openScreenShare(channel.userStore.socketId, channel.userStore.screenSharingStream)">SHARING SCREEN
-            </button>
-          </td>
-          <td>
-            <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleMicActive()"><i
-              [ngClass]="(!selfGlobalMute && selfMicActive) ? (selfIsTalking ? 'bi-mic-fill' : 'bi bi-mic') : 'bi bi-mic-mute'"></i>
-            </button>
-            <button class="btn btn-dark" (click)="toggleGlobalMute()"><i
-              [ngClass]="selfGlobalMute ? 'bi bi-volume-mute' : 'bi bi-volume-up'"></i>
-            </button>
-          </td>
-        </tr>
-        <tr *ngFor="let peer of channel.peers | keyvalue; let i = index">
-          <th scope="row">{{i + 2}}</th>
-          <td><i
-            [ngClass]="peer.value.isMuted ? 'bi bi-mic-mute' : (getPeerTalking(peer.value) ? 'bi-mic-fill' : 'bi bi-mic') ">
-          </i>
-            {{peer.value.displayName || peer.value.socketId}}
-            <button *ngIf="peer.value.isSharingScreen" class="btn btn-sm btn-danger"
-                    (click)="openScreenShare(peer.value.socketId, peer.value.remoteStream)">SHARING SCREEN
-            </button>
-            <br>
-            <input class="form-range" type="range" min="0" max="1" step="0.001"
-                   [value]="peer.value.volume" (input)="adjustVolume($event, peer.value)"
-                   [disabled]="peer.value.localMuted"></td>
-          <td>
-            <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleLocalMuteStatus(peer.value)"><i
-              [ngClass]="!getLocalMuteStatus(peer.value) ? 'bi bi-volume-up' : 'bi bi-volume-mute'"></i>
-            </button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-  <div>
-    <div>
-      <label for="display-name">Display Name</label>
-      <input class="form-control" type="text" id="display-name" [(ngModel)]="this.channel.userStore.displayName"
-             (input)="changeName($event)">
-    </div>
-    <div>Current Volume: <span #audioMeter></span></div>
-    <div>
-      <label for="noise-gate">Noise Gate Level {{channel.userStore.noiseGateValue}}</label>
-      <input class="form-range" type="range" min="0" max="50" step="0.01" name="noise-gate" id="noise-gate"
-             [value]="channel.userStore.noiseGateValue" (input)="adjustNoiseGate($event)">
-    </div>
-  </div>
+<div class="row justify-content-center ">
+  <app-channel-controls></app-channel-controls>
 
-  <ng-container *ngFor="let peer of channel.peers | keyvalue">
-    <audio *ngIf="!!peer.value.remoteStream.active" [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream"
-           autoplay></audio>
-  </ng-container>
+  <div class="row my-3">
+    <ul class="list-group align-items-center pe-0">
+      <li class="list-group-item list-group-item-dark user-channel d-flex align-items-center">{{(this.channel.userStore.displayName || 'You') | slice:0:15 }}
+        <span class="position-absolute user-picture d-flex justify-content-center" [ngClass]="selfIsTalking ? 'border-success' : (selfMicActive ? 'border-dark': 'border-danger')">
+          <img class="align-self-center " src="assets/picture-placeholder.png" alt="user profile picture">
+        </span>
+      </li>
+      <li class="list-group-item list-group-item-dark user-channel d-flex align-items-center" *ngFor="let peer of channel.peers | keyvalue; let i = index">
+<!--        <i [ngClass]="peer.value.isMuted ? 'bi bi-mic-mute' : (getPeerTalking(peer.value) ? 'bi-mic-fill' : 'bi bi-mic') "></i>-->
+        {{(peer.value.displayName || 'Peer') | slice:0:15}}
+        <span class="position-absolute user-picture d-flex justify-content-center" [ngClass]="peer.value.isTalking ? 'border-success' : (peer.value.isMuted ? 'border-danger': 'border-dark')">
+          <img src="assets/picture-placeholder.png" alt="user profile picture">
+        </span>
+      </li>
+    </ul>
+  </div>
 </div>
 
+<!--PEER OPTIONS (TO ADD TO RIGHT CLICK?)-->
+<!--
+<button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleLocalMuteStatus(peer.value)"><i
+         [ngClass]="!getLocalMuteStatus(peer.value) ? 'bi bi-volume-up' : 'bi bi-volume-mute'"></i>
+</button>
+<button *ngIf="peer.value.isSharingScreen" class="btn btn-sm btn-danger"&ndash;&gt;-->
+  <!--                  (click)="openScreenShare(peer.value.socketId, peer.value.remoteStream)">SHARING SCREEN-->
+  <!--          </button>-->
+  <!--          <br>-->
+  <!--          <input class="form-range" type="range" min="0" max="1" step="0.001"-->
+  <!--                 [value]="peer.value.volume" (input)="adjustVolume($event, peer.value)"-->
+  <!--                 [disabled]="peer.value.localMuted">
+
+  USER OPTIONS (OPTIONS MENU)
+ <div>-->
+<!--  <div class="row">-->
+<!--    <div class="col-auto">-->
+<!--      <label for="display-name">Display Name</label>-->
+<!--      <input class="form-control" type="text" id="display-name" [(ngModel)]="this.channel.userStore.displayName"-->
+<!--             (input)="changeName($event)">-->
+<!--    </div>-->
+<!--    <div>Current Volume: <span #audioMeter></span></div>-->
+<!--    <div class="col-auto">-->
+<!--      <label for="noise-gate">Noise Gate Level {{channel.userStore.noiseGateValue}}</label>-->
+<!--      <input class="form-range" type="range" min="0" max="50" step="0.01" name="noise-gate" id="noise-gate"-->
+<!--             [value]="channel.userStore.noiseGateValue" (input)="adjustNoiseGate($event)">-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
+<ng-container *ngFor="let peer of channel.peers | keyvalue">
+  <audio *ngIf="!!peer.value.remoteStream.active" [volume]="peer.value.volume" [srcObject]="peer.value.remoteStream"
+         autoplay></audio>
+</ng-container>

@@ -10,12 +10,11 @@ import { ChannelScreenShareComponent } from "./channel-screen-share/channel-scre
   selector: 'app-channel', templateUrl: './channel.component.html', styleUrls: [ './channel.component.sass' ]
 })
 export class ChannelComponent implements OnInit {
-  @ViewChild('audioMeter', { static: false }) audioMeter!: ElementRef;
+  // @ViewChild('audioMeter', { static: false }) audioMeter!: ElementRef;
   modalRef?: BsModalRef;
 
   get selfIsTalking() { return this.channel.userStore.localStream.getAudioTracks()[0]?.enabled }
   get selfMicActive() { return this.channel.userStore.micActive; }
-  get selfGlobalMute() { return this.channel.userStore.globalMute; }
 
   constructor(private webRTC: WebRTCService, public channel: ChannelService, private socket: Socket, private modal: BsModalService) { }
 
@@ -34,28 +33,11 @@ export class ChannelComponent implements OnInit {
     });
   }
 
-  getPeerTalking(peer: Peer) {
-    return peer.isTalking;
-  }
 
   getLocalMuteStatus(peer: Peer): boolean {
     return peer.localMuted;
   }
 
-  toggleMicActive() {
-    this.channel.userStore.micActive = !this.channel.userStore.micActive;
-    this.socket.emit('user-toggled-mic', !this.channel.userStore.micActive);
-  }
-
-  toggleGlobalMute() {
-    this.channel.userStore.globalMute = !this.channel.userStore.globalMute;
-
-    //for each peer, disable their audio track
-    for (const peer in this.channel.peers) {
-      const p = this.channel.peers[peer];
-      p.remoteStream.getAudioTracks()[0].enabled = !this.channel.userStore.globalMute;
-    }
-  }
 
   toggleLocalMuteStatus(peer: Peer) {
     peer.localMuted = !peer.localMuted;
@@ -76,12 +58,8 @@ export class ChannelComponent implements OnInit {
 
   updateVolume() {
     setInterval(() => {
-      this.audioMeter.nativeElement.innerHTML = this.channel.userStore.volume;
+      // this.audioMeter.nativeElement.innerHTML = this.channel.userStore.volume;
     }, 200);
-  }
-
-  toggleScreenSharing() {
-    this.webRTC.initializeScreenShare();
   }
 
   openScreenShare(id: string, stream: MediaStream) {

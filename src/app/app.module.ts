@@ -5,6 +5,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import {ChannelModule} from "./channel/channel.module";
 import {SharedModule} from "./shared/shared.module";
+import { LeftNavBarModule } from "./left-nav-bar/left-nav-bar.module";
 
 @NgModule({
   declarations: [
@@ -14,7 +15,8 @@ import {SharedModule} from "./shared/shared.module";
     BrowserModule,
     AppRoutingModule,
     ChannelModule,
-    SharedModule
+    SharedModule,
+    LeftNavBarModule
   ],
   exports: [SharedModule],
   providers: [],

@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { BsModalRef } from "ngx-bootstrap/modal";
-import { Peer } from "../../shared/models/peer";
 import { Socket } from "ngx-socket-io";
 
 @Component({
