@@ -1,24 +1,25 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Socket } from "ngx-socket-io";
 import { WebRTCService } from "../shared/services/webrtc.service";
 import { ChannelService } from "./channel.service";
 import { Peer } from "../shared/models/peer";
-import { BsModalRef, BsModalService, ModalOptions } from "ngx-bootstrap/modal";
-import { ChannelScreenShareComponent } from "./channel-screen-share/channel-screen-share.component";
+import { MatMenuTrigger } from "@angular/material/menu";
 
 @Component({
   selector: 'app-channel', templateUrl: './channel.component.html', styleUrls: [ './channel.component.sass' ]
 })
 export class ChannelComponent implements OnInit {
   // @ViewChild('audioMeter', { static: false }) audioMeter!: ElementRef;
-  modalRef?: BsModalRef;
+  @ViewChild(MatMenuTrigger, {static: true}) matMenuTrigger?: MatMenuTrigger;
+  // we create an object that contains coordinates
+  menuTopLeftPosition =  {x: '0', y: '0'}
 
   get selfGlobalMute() { return this.channel.userStore.globalMute; }
   get selfScreenSharing() { return this.channel.userStore.isSharingScreen; }
   get selfIsTalking() { return this.channel.userStore.localStream.getAudioTracks()[0]?.enabled }
   get selfMicActive() { return this.channel.userStore.micActive; }
 
-  constructor(private webRTC: WebRTCService, public channel: ChannelService, private socket: Socket, private modal: BsModalService) { }
+  constructor(private webRTC: WebRTCService, public channel: ChannelService, private socket: Socket) { }
 
   ngOnInit(): void {
     if (this.channel.userStore.socketId === '') {
@@ -38,7 +39,6 @@ export class ChannelComponent implements OnInit {
   getLocalMuteStatus(peer: Peer): boolean {
     return peer.localMuted;
   }
-
 
   toggleLocalMuteStatus(peer: Peer) {
     peer.localMuted = !peer.localMuted;
@@ -63,13 +63,29 @@ export class ChannelComponent implements OnInit {
     }, 200);
   }
 
-  openScreenShare(id: string, stream: MediaStream) {
-    const initialState: ModalOptions = {
-      initialState: {
-        id,
-        stream
-      }
+  onPeerRightClick(event: MouseEvent, peer: Peer,) {
+    // we record the mouse position in our object
+    this.menuTopLeftPosition.x = event.clientX + 'px';
+    this.menuTopLeftPosition.y = event.clientY + 'px';
+    // we open the menu
+    // we pass to the menu the information about our object
+    if (this.matMenuTrigger) {
+      this.matMenuTrigger.menuData = {peer}
+      // we open the menu
+      this.matMenuTrigger.openMenu();
     }
-    this.modalRef = this.modal.show(ChannelScreenShareComponent, initialState);
+  }
+
+  onUserRightClick(event: MouseEvent) {
+    // we record the mouse position in our object
+    this.menuTopLeftPosition.x = event.clientX + 'px';
+    this.menuTopLeftPosition.y = event.clientY + 'px';
+    // we open the menu
+    // we pass to the menu the information about our object
+    if (this.matMenuTrigger) {
+      this.matMenuTrigger.menuData = {user: true}
+      // we open the menu
+      this.matMenuTrigger.openMenu();
+    }
   }
 }

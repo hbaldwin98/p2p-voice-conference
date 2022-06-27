@@ -1,14 +1,25 @@
-<div class="col d-flex justify-content-center btn-group ">
-  <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleMicActive()"><i
-    [ngClass]="(!selfGlobalMute && selfMicActive) ? (selfIsTalking ? 'bi-mic-fill' : 'bi bi-mic') : 'bi bi-mic-mute'"></i>
-  </button>
-  <button class="btn btn-dark" (click)="toggleGlobalMute()"><i
-    [ngClass]="selfGlobalMute ? 'bi bi-volume-mute' : 'bi bi-volume-up'"></i>
-  </button>
-  <button class="btn btn-dark position-relative" (click)="toggleScreenSharing()">
-    <i class="bi bi-boombox-fill"></i>
-    <span *ngIf="selfScreenSharing" class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-dark rounded-circle">
-    <span class="visually-hidden">Sharing Screen</span>
-  </span>
-  </button>
+<!--<div class="row">-->
+<!--  <div class="col d-flex justify-content-center btn-group ">-->
+<!--    <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleMicActive()">-->
+<!--    </button>-->
+<!--    <button class="btn btn-dark" (click)="toggleGlobalMute()"><i-->
+<!--      [ngClass]="selfGlobalMute ? 'bi bi-volume-mute' : 'bi bi-volume-up'"></i>-->
+<!--    </button>-->
+<!--    <button class="btn btn-dark position-relative" (click)="toggleScreenSharing()">-->
+<!--      <i class="bi bi-boombox-fill"></i>-->
+<!--    </button>-->
+<!--  </div>-->
+<!--</div>-->
+<div class="row">
+  <div class="col d-flex justify-content-center btn-group">
+    <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleMicActive()">
+      <mat-icon [color]="selfIsTalking ? 'warn' : 'primary'">{{(!selfGlobalMute && selfMicActive) ? 'mic' : 'mic_off'}}</mat-icon>
+    </button>
+    <button class="btn btn-dark" (click)="toggleGlobalMute()">
+      <mat-icon>{{!selfGlobalMute ? 'volume_up' : 'volume_off'}}</mat-icon>
+    </button>
+    <button class="btn btn-dark position-relative " (click)="toggleScreenSharing()">
+      <mat-icon>screen_share</mat-icon>
+    </button>
+  </div>
 </div>

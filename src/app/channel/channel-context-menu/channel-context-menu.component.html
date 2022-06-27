@@ -1,0 +1,33 @@
+<ng-container *ngIf="peer">
+  <button mat-menu-item (click)="toggleLocalMuteStatus(peer)">
+    <mat-icon color="warn">{{peer.localMuted ? 'mic_off' : 'mic'}}</mat-icon>
+    <span>{{peer.localMuted ? 'Unmute' : 'Mute'}}</span>
+  </button>
+  <button mat-menu-item *ngIf="peer.isSharingScreen" (click)="openScreenShare(peer.socketId, peer.remoteStream)">
+    <mat-icon color="warn">screen_share</mat-icon>
+    <span>View Screenshare</span>
+  </button>
+</ng-container>
+<ng-container *ngIf="user">
+  <button mat-menu-item (click)="toggleMicActive()">
+    <mat-icon color="warn">{{!this.userStore.micActive ? 'mic_off' : 'mic'}}</mat-icon>
+    <span>{{!this.userStore.micActive ? 'Unmute' : 'Mute'}}</span>
+  </button>
+  <button mat-menu-item (click)="toggleGlobalMute()">
+    <mat-icon color="warn">{{this.userStore.globalMute ? 'volume_off' : 'volume_up'}}</mat-icon>
+    <span>{{this.userStore.globalMute ? 'Un-Deafen' : 'Deafen'}}</span>
+  </button>
+  <button mat-menu-item *ngIf="this.userStore.isSharingScreen" (click)="openScreenShare(this.userStore.socketId, this.userStore.screenSharingStream)">
+    <mat-icon color="warn">screen_share</mat-icon>
+    <span>View Screenshare</span>
+  </button>
+  <button mat-menu-item *ngIf="this.userStore.isSharingScreen" (click)="toggleScreenSharing()">
+    <mat-icon color="warn">desktop_windows</mat-icon>
+    <span>Stop Screenshare</span>
+  </button>
+  <button mat-menu-item *ngIf="!this.userStore.isSharingScreen" (click)="toggleScreenSharing()">
+    <mat-icon color="warn">screen_share</mat-icon>
+    <span>Share Screen?</span>
+  </button>
+</ng-container>
+

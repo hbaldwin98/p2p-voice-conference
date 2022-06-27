@@ -40,6 +40,4 @@ export class ChannelControlsComponent implements OnInit {
   toggleScreenSharing() {
     this.webRTC.initializeScreenShare();
   }
-
-
 }

@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import {ChannelModule} from "./channel/channel.module";
 import {SharedModule} from "./shared/shared.module";
 import { LeftNavBarModule } from "./left-nav-bar/left-nav-bar.module";
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { LeftNavBarModule } from "./left-nav-bar/left-nav-bar.module";
     AppRoutingModule,
     ChannelModule,
     SharedModule,
-    LeftNavBarModule
+    LeftNavBarModule,
+    BrowserAnimationsModule
   ],
   exports: [SharedModule],
   providers: [],

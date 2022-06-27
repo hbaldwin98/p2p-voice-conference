@@ -3,15 +3,25 @@
 
   <div class="row my-3">
     <ul class="list-group align-items-center pe-0">
-      <li class="list-group-item list-group-item-dark user-channel d-flex align-items-center">{{(this.channel.userStore.displayName || 'You') | slice:0:15 }}
-        <span class="position-absolute user-picture d-flex justify-content-center" [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfGlobalMute) ? 'border-dark': 'border-danger')">
+      <li class="list-group-item list-group-item-dark user d-flex align-items-center"
+          (contextmenu)="onUserRightClick($event)">
+        <span *ngIf="selfScreenSharing" matBadge="L" matBadgeColor="warn"
+              matBadgeSize="small">{{(this.channel.userStore.displayName || 'You') | slice:0:15 }}</span>
+        <span *ngIf="!selfScreenSharing">{{(this.channel.userStore.displayName || 'You') | slice:0:15 }}</span>
+        <span class="position-absolute user-picture d-flex justify-content-center"
+              [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfGlobalMute) ? 'border-dark': 'border-danger')">
           <img class="align-self-center " src="assets/picture-placeholder.png" alt="user profile picture">
         </span>
       </li>
-      <li class="list-group-item list-group-item-dark user-channel d-flex align-items-center" *ngFor="let peer of channel.peers | keyvalue; let i = index">
-<!--        <i [ngClass]="peer.value.isMuted ? 'bi bi-mic-mute' : (getPeerTalking(peer.value) ? 'bi-mic-fill' : 'bi bi-mic') "></i>-->
-        {{(peer.value.displayName || 'Peer') | slice:0:15}}
-        <span class="position-absolute user-picture d-flex justify-content-center" [ngClass]="peer.value.isTalking ? 'border-success' : (peer.value.isMuted ? 'border-danger': 'border-dark')">
+      <li class="list-group-item list-group-item-dark user d-flex align-items-center"
+          *ngFor="let peer of channel.peers | keyvalue; let i = index"
+          (contextmenu)="onPeerRightClick($event, peer.value)">
+        <!--        <i [ngClass]="peer.value.isMuted ? 'bi bi-mic-mute' : (getPeerTalking(peer.value) ? 'bi-mic-fill' : 'bi bi-mic') "></i>-->
+        <span *ngIf="peer.value.isSharingScreen" matBadge="L" matBadgeColor="warn"
+              matBadgeSize="small">{{(peer.value.displayName || 'Peer') | slice:0:15}}</span>
+        <span *ngIf="!peer.value.isSharingScreen">{{(peer.value.displayName || 'Peer') | slice:0:15}}</span>
+        <span class="position-absolute user-picture d-flex justify-content-center"
+              [ngClass]="peer.value.isTalking ? 'border-success' : (peer.value.isMuted ? 'border-danger': 'border-dark')">
           <img src="assets/picture-placeholder.png" alt="user profile picture">
         </span>
       </li>
@@ -19,21 +29,35 @@
   </div>
 </div>
 
+<!-- an hidden div is created to set the position of appearance of the menu-->
+<div style="visibility: hidden; position: absolute;"
+     [style.left]="menuTopLeftPosition.x"
+     [style.top]="menuTopLeftPosition.y"
+     [matMenuTriggerFor]="menu"></div>
+
+
+<mat-menu #menu="matMenu">
+  <ng-template matMenuContent let-peer="peer" let-user="user">
+    <app-channel-context-menu [peer]="peer" [user]="user"></app-channel-context-menu>
+  </ng-template>
+</mat-menu>
+
+
 <!--PEER OPTIONS (TO ADD TO RIGHT CLICK?)-->
 <!--
 <button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleLocalMuteStatus(peer.value)"><i
          [ngClass]="!getLocalMuteStatus(peer.value) ? 'bi bi-volume-up' : 'bi bi-volume-mute'"></i>
 </button>
 <button *ngIf="peer.value.isSharingScreen" class="btn btn-sm btn-danger"&ndash;&gt;-->
-  <!--                  (click)="openScreenShare(peer.value.socketId, peer.value.remoteStream)">SHARING SCREEN-->
-  <!--          </button>-->
-  <!--          <br>-->
-  <!--          <input class="form-range" type="range" min="0" max="1" step="0.001"-->
-  <!--                 [value]="peer.value.volume" (input)="adjustVolume($event, peer.value)"-->
-  <!--                 [disabled]="peer.value.localMuted">
+<!--                  (click)="openScreenShare(peer.value.socketId, peer.value.remoteStream)">SHARING SCREEN-->
+<!--          </button>-->
+<!--          <br>-->
+<!--          <input class="form-range" type="range" min="0" max="1" step="0.001"-->
+<!--                 [value]="peer.value.volume" (input)="adjustVolume($event, peer.value)"-->
+<!--                 [disabled]="peer.value.localMuted">
 
-  USER OPTIONS (OPTIONS MENU)
- <div>-->
+USER OPTIONS (OPTIONS MENU)
+<div>-->
 <!--  <div class="row">-->
 <!--    <div class="col-auto">-->
 <!--      <label for="display-name">Display Name</label>-->
