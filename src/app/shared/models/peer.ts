@@ -6,6 +6,7 @@
   volume: number;
   localMuted: boolean;
   isMuted: boolean;
+  isGlobalMuted: boolean;
   isTalking: boolean;
   isSharingScreen: boolean;
 }
@@ -18,6 +19,7 @@ export class Peer implements IPeer {
   volume: number;
   localMuted = false;
   isMuted = false
+  isGlobalMuted = false;
   isTalking = false;
   isSharingScreen = false;
 

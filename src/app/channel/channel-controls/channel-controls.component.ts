@@ -28,7 +28,7 @@ export class ChannelControlsComponent implements OnInit {
 
   toggleGlobalMute() {
     this.channel.userStore.globalMute = !this.channel.userStore.globalMute;
-    this.socket.emit('user-toggled-mic', this.selfMicActive ? this.selfGlobalMute : !this.selfMicActive);
+    this.socket.emit('user-global-muted', this.channel.userStore.globalMute);
 
     //for each peer, disable their audio track
     for (const peer in this.channel.peers) {

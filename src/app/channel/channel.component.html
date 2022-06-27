@@ -3,27 +3,35 @@
 
   <div class="row my-3">
     <ul class="list-group align-items-center pe-0">
-      <li class="list-group-item list-group-item-dark user d-flex align-items-center"
+      <li class="list-group-item list-group-item-dark user d-flex align-items-center justify-content-between"
           (contextmenu)="onUserRightClick($event)">
         <span *ngIf="selfScreenSharing" matBadge="L" matBadgeColor="warn"
               matBadgeSize="small">{{(this.channel.userStore.displayName || 'You') | slice:0:15 }}</span>
         <span *ngIf="!selfScreenSharing">{{(this.channel.userStore.displayName || 'You') | slice:0:15 }}</span>
-        <span class="position-absolute user-picture d-flex justify-content-center"
-              [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfGlobalMute) ? 'border-dark': 'border-danger')">
-          <img class="align-self-center " src="assets/picture-placeholder.png" alt="user profile picture">
-        </span>
+        <div class="d-flex align-items-center justify-content-center">
+          <mat-icon class="d-flex align-items-center justify-content-center" color="warn" style="font-size: 20px" *ngIf="!selfMicActive || selfGlobalMute">mic_off</mat-icon>
+          <mat-icon class="d-flex align-items-center justify-content-center" color="warn" style="font-size: 20px" *ngIf="selfGlobalMute">volume_off</mat-icon>
+          <span class="user-picture"
+                [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfGlobalMute) ? 'border-dark': 'border-danger')">
+            <img src="assets/picture-placeholder.png" alt="user profile picture">
+          </span>
+        </div>
       </li>
-      <li class="list-group-item list-group-item-dark user d-flex align-items-center"
+      <li class="list-group-item list-group-item-dark user d-flex align-items-center justify-content-between"
           *ngFor="let peer of channel.peers | keyvalue; let i = index"
           (contextmenu)="onPeerRightClick($event, peer.value)">
-        <!--        <i [ngClass]="peer.value.isMuted ? 'bi bi-mic-mute' : (getPeerTalking(peer.value) ? 'bi-mic-fill' : 'bi bi-mic') "></i>-->
         <span *ngIf="peer.value.isSharingScreen" matBadge="L" matBadgeColor="warn"
-              matBadgeSize="small">{{(peer.value.displayName || 'Peer') | slice:0:15}}</span>
-        <span *ngIf="!peer.value.isSharingScreen">{{(peer.value.displayName || 'Peer') | slice:0:15}}</span>
-        <span class="position-absolute user-picture d-flex justify-content-center"
-              [ngClass]="peer.value.isTalking ? 'border-success' : (peer.value.isMuted ? 'border-danger': 'border-dark')">
-          <img src="assets/picture-placeholder.png" alt="user profile picture">
-        </span>
+              matBadgeSize="small">{{(peer.value.displayName || 'Peer') | slice:0:15 }}</span>
+        <span *ngIf="!peer.value.isSharingScreen">{{(peer.value.displayName || 'Peer') | slice:0:15 }}</span>
+        <div class="d-flex align-items-center justify-content-center">
+          <mat-icon class="d-flex align-items-center justify-content-center" color="accent" style="font-size: 20px" *ngIf="peer.value.localMuted">mic_off</mat-icon>
+          <mat-icon class="d-flex align-items-center justify-content-center" color="warn" style="font-size: 20px" *ngIf="(peer.value.isMuted || peer.value.isGlobalMuted) && !peer.value.localMuted">mic_off</mat-icon>
+          <mat-icon class="d-flex align-items-center justify-content-center" color="warn" style="font-size: 20px" *ngIf="peer.value.isGlobalMuted">volume_off</mat-icon>
+          <span class="user-picture"
+                [ngClass]="peer.value.isTalking ? 'border-success' : ((!peer.value.isMuted && !peer.value.isGlobalMuted) ? 'border-dark': 'border-danger')">
+            <img src="assets/picture-placeholder.png" alt="user profile picture">
+          </span>
+        </div>
       </li>
     </ul>
   </div>

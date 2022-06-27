@@ -90,6 +90,10 @@ export class WebRTCService {
       this.channel.peers[data.userId].isMuted = data.mic;
     });
 
+    this.socket.on('user-global-muted', (data: any) => {
+      this.channel.peers[data.userId].isGlobalMuted = data.globalMute;
+    });
+
     this.socket.on('user-talking', (data: any) => {
       if (this.channel.peers[data.userId]) this.channel.peers[data.userId].isTalking = data.userTalking;
     });
