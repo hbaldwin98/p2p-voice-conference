@@ -10,13 +10,11 @@ import { Peer } from "../models/peer";
 export class WebRTCService {
   audioConstraints = {
     audio: {
-      autoGainControl: true,
+      autoGainControl: false,
       channelCount: 2,
       echoCancellation: false,
-      latency: 0,
+      latency: 0.5,
       noiseSuppression: false,
-      sampleRate: 48000,
-      sampleSize: 16,
       volume: 1.0
     }, video: false,
   };
