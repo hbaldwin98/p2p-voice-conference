@@ -68,11 +68,8 @@ export class ChannelContextMenuComponent implements OnInit {
   }
 
   adjustVolume(e: any, peer: Peer) {
-    e.stopPropagation();
-
     if (this.toolTip.isOpen)
       this.toolTip.hide();
-
 
     this.toolTip.show();
 

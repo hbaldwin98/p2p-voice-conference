@@ -43,7 +43,7 @@
   <div class="volume-bar mx-4">
     <label class="ms-4 ps-2" for="noise-gate">Noise Gate Level {{userStore.noiseGateValue}}</label>
     <input class="form-range" type="range" min="0" max="50" step="0.1" name="noise-gate" id="noise-gate"
-           [value]="userStore.noiseGateValue" (input)="adjustNoiseGate($event)">
+           [value]="userStore.noiseGateValue" (input)="adjustNoiseGate($event)" (click)="$event.stopPropagation()">
   </div>
   <mat-divider class="my-2 mx-3"></mat-divider>
 </ng-container>
