@@ -200,6 +200,7 @@ export class WebRTCService {
     javascriptNode.connect(destination);
     analyser.connect(destination);
     this.channel.userStore.localStream = destination.stream;
+    this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
   }
 
   async getVolumeInDb() {
