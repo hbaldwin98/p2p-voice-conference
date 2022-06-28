@@ -4,7 +4,7 @@
   localStream: MediaStream,
   screenSharingStream: MediaStream,
   micActive: boolean,
-  globalMute: boolean,
+  deafened: boolean,
   analyser: AnalyserNode
   volume: number,
   shouldVolumeTimeout: boolean,

@@ -2,7 +2,7 @@
   <div class="col bg-dark pe-0 me-0">
     <div class="user d-flex ps-2 align-content-center">
           <span class="user-picture d-flex justify-content-center align-content-center mt-2"
-                [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfGlobalMute) ? 'border-dark': 'border-danger')">
+                [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfDeafened) ? 'border-dark': 'border-danger')">
       <img class="align-self-center " src="assets/picture-placeholder.png" alt="user profile picture">
           </span>
       <div class="user-name position-absolute">
@@ -12,15 +12,15 @@
   </div>
   <div class="col" role="group" aria-label="user button controls">
     <div class="btn-group d-flex justify-content-end">
-      <button [disabled]="selfGlobalMute"
+      <button [disabled]="selfDeafened"
               class="btn btn-sm btn-dark d-flex align-items-center justify-content-center my-3"
               (click)="toggleMicActive()" tooltip="{{selfMicActive ? 'Mute' : 'Unmute'}} Microphone" [delay]="250">
-        <mat-icon>{{(!selfGlobalMute && selfMicActive) ? 'mic' : 'mic_off'}}</mat-icon>
+        <mat-icon>{{(!selfDeafened && selfMicActive) ? 'mic' : 'mic_off'}}</mat-icon>
       </button>
       <button class="btn btn-sm btn-dark d-flex align-items-center justify-content-center my-3"
               (click)="toggleGlobalMute()"
-              tooltip="{{!selfGlobalMute ? 'Deafen' : 'Undeafen'}} Sound" [delay]="250">
-        <mat-icon>{{!selfGlobalMute ? 'volume_up' : 'volume_off'}}</mat-icon>
+              tooltip="{{!selfDeafened ? 'Deafen' : 'Undeafen'}} Sound" [delay]="250">
+        <mat-icon>{{!selfDeafened ? 'volume_up' : 'volume_off'}}</mat-icon>
       </button>
       <button class="btn btn-sm btn-dark d-flex align-items-center justify-content-center my-3" (click)="openSettings()"
               tooltip="Open Settings" [delay]="250">

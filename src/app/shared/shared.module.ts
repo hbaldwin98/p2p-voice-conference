@@ -15,13 +15,31 @@ import { TooltipModule } from "ngx-bootstrap/tooltip";
 import { MatMenuModule } from "@angular/material/menu";
 import { MatIconModule } from "@angular/material/icon";
 import { MatBadgeModule } from "@angular/material/badge";
+import { MatDividerModule } from "@angular/material/divider";
 
 const config: SocketIoConfig = { url: environment.socketServer, options: {} };
 
 @NgModule({
   declarations: [],
-  imports: [ CommonModule, FormsModule, SocketIoModule.forRoot(config), ModalModule.forRoot(), MatMenuModule, MatIconModule, MatBadgeModule, TooltipModule.forRoot() ],
-  exports: [ SocketIoModule, FormsModule, ModalModule, MatMenuModule, MatIconModule, MatBadgeModule, TooltipModule ]
+  imports: [
+    CommonModule,
+    FormsModule,
+    SocketIoModule.forRoot(config),
+    ModalModule.forRoot(),
+    TooltipModule.forRoot(),
+    MatMenuModule,
+    MatIconModule,
+    MatBadgeModule,
+    MatDividerModule ],
+  exports: [
+    SocketIoModule,
+    FormsModule,
+    ModalModule,
+    MatMenuModule,
+    MatIconModule,
+    MatBadgeModule,
+    TooltipModule,
+    MatDividerModule ]
 })
 export class SharedModule {
 }

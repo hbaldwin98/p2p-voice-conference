@@ -22,10 +22,8 @@ export class WebRTCService {
   };
 
   screenSharingConstraints = {
-    video:{
-      width: { ideal: 1920, max: 1920 },
-      height: { ideal: 1080, max: 1080 },
-      frameRate: {ideal: 60}
+    video: {
+      width: { ideal: 1920, max: 1920 }, height: { ideal: 1080, max: 1080 }, frameRate: { ideal: 60 }
     },
   }
 
@@ -90,8 +88,8 @@ export class WebRTCService {
       this.channel.peers[data.userId].isMuted = data.mic;
     });
 
-    this.socket.on('user-global-muted', (data: any) => {
-      this.channel.peers[data.userId].isGlobalMuted = data.globalMute;
+    this.socket.on('user-deafened', (data: any) => {
+      this.channel.peers[data.userId].isDeafened = data.globalMute;
     });
 
     this.socket.on('user-talking', (data: any) => {
@@ -167,30 +165,28 @@ export class WebRTCService {
     analyser.maxDecibels = 0;
     analyser.smoothingTimeConstant = 0.85;
 
-
     javascriptNode.onaudioprocess = async () => {
       let db = await this.getVolumeInDb()
       let shouldTimeout = this.channel.userStore.shouldVolumeTimeout;
       let noiseGate = this.channel.userStore.noiseGateValue;
       let timeout;
 
-      if (!this.channel.userStore.globalMute && this.channel.userStore.micActive) {
-        if (db < noiseGate) {
-          if (shouldTimeout && db < noiseGate - 3) {
-            this.channel.userStore.shouldVolumeTimeout = false;
-            timeout = setTimeout(() => {
-              this.socket.emit('user-talking', false);
-              this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
-            }, this.channel.userStore.volumeRelease);
-          }
-        }
-
-        if (db >= noiseGate && !shouldTimeout) {
+      if (!this.channel.userStore.deafened && this.channel.userStore.micActive) {
+        if (db >= noiseGate) {
           if (timeout) clearTimeout(timeout);
           this.socket.emit('user-talking', true);
           this.channel.userStore.localStream.getAudioTracks()[0].enabled = true;
           this.channel.userStore.shouldVolumeTimeout = true;
         }
+
+        if (shouldTimeout && db < noiseGate - 3) {
+          this.channel.userStore.shouldVolumeTimeout = false;
+          timeout = setTimeout(() => {
+            this.socket.emit('user-talking', false);
+            this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
+          }, this.channel.userStore.volumeRelease);
+        }
+
       } else {
         this.socket.emit('user-talking', false);
         this.channel.userStore.localStream.getAudioTracks()[0].enabled = false;
@@ -337,12 +333,10 @@ export class WebRTCService {
 
       // ensure our peer audio tracks status are correct
       // e.g. if the local peer has muted their stream, retain the mute.
-      if (this.channel.userStore.globalMute) {
+      if (this.channel.userStore.deafened) {
         for (const peerId in this.channel.peers) {
           console.log('muting peer', peerId);
           this.channel.peers[peerId].remoteStream.getAudioTracks()[0].enabled = false;
-          const user = this.channel.userStore;
-          this.socket.emit('user-toggled-mic', user.micActive ? user.globalMute : user.micActive);
         }
       } else {
         for (const peerId in this.channel.peers) {
@@ -352,7 +346,12 @@ export class WebRTCService {
 
       // send the answer to the caller
       this.sendWebRTCData({
-        type: 'answer', answer: answer, socketId: peerData.sender, sender: this.channel.userStore.socketId,
+        type: 'answer',
+        answer: answer,
+        socketId: peerData.sender,
+        sender: this.channel.userStore.socketId,
+        muted: !this.channel.userStore.micActive,
+        deafened: this.channel.userStore.deafened,
       });
     }
   }
@@ -361,18 +360,22 @@ export class WebRTCService {
   async handleWebRTCAnswer(peerData: WebRTCAO) {
     let peer = this.channel.peers[peerData.sender];
     if (peer) {
+      if (peerData.deafened)
+        peer.isDeafened = true;
+      if (peerData.muted)
+        peer.isMuted = true;
       // get the SDP answer information from caller and set that as the remote description
       console.log("handling webRTC answer", peerData);
       if (peerData.answer) await peer.rtcPeerConnection.setRemoteDescription(peerData.answer);
     }
     // ensure our peer audio tracks status are correct
     // e.g. if the local peer has muted their stream, retain the mute.
-    if (this.channel.userStore.globalMute) {
+    const user = this.channel.userStore;
+
+    if (this.channel.userStore.deafened) {
       for (const peerId in this.channel.peers) {
         console.log('muting peer', peerId);
         this.channel.peers[peerId].remoteStream.getAudioTracks()[0].enabled = false;
-        const user = this.channel.userStore;
-        this.socket.emit('user-toggled-mic', user.micActive ? user.globalMute : user.micActive);
       }
     } else {
       for (const peerId in this.channel.peers) {

@@ -7,6 +7,16 @@
     <mat-icon color="warn">screen_share</mat-icon>
     <span>View Screenshare</span>
   </button>
+  <mat-divider class="my-2 mx-3"></mat-divider>
+  <div class="volume-bar mx-4">
+    <label class="form-label ms-4 ps-2" for="volume">User Volume</label>
+    <input class="form-range" id="volume" type="range" min="0" max="1" step="0.01"
+           [value]="peer.volume" (input)="adjustVolume($event, peer)" (click)="$event.stopPropagation()"
+           [disabled]="peer.localMuted" tooltip="{{peer.volume * 100 | number: '1.0-0'}}%"
+           [tooltipFadeDuration]="0" [tooltipPopupDelay]="0">
+  </div>
+  <mat-divider class="m-2"></mat-divider>
+
 </ng-container>
 <ng-container *ngIf="user">
   <button mat-menu-item (click)="toggleMicActive()">
@@ -14,8 +24,8 @@
     <span>{{!selfMicActive ? 'Unmute' : 'Mute'}}</span>
   </button>
   <button mat-menu-item (click)="toggleGlobalMute()">
-    <mat-icon color="warn">{{selfGlobalMute ? 'volume_off' : 'volume_up'}}</mat-icon>
-    <span>{{selfGlobalMute ? 'Undeafen' : 'Deafen'}}</span>
+    <mat-icon color="warn">{{selfDeafened ? 'volume_off' : 'volume_up'}}</mat-icon>
+    <span>{{selfDeafened ? 'Undeafen' : 'Deafen'}}</span>
   </button>
   <button mat-menu-item *ngIf="selfScreenSharing" (click)="openScreenShare(this.userStore.socketId, this.userStore.screenSharingStream)">
     <mat-icon color="warn">screen_share</mat-icon>
@@ -29,5 +39,12 @@
     <mat-icon color="warn">screen_share</mat-icon>
     <span>Share Screen?</span>
   </button>
+  <mat-divider class="my-2 mx-3"></mat-divider>
+  <div class="volume-bar mx-4">
+    <label class="ms-4 ps-2" for="noise-gate">Noise Gate Level {{userStore.noiseGateValue}}</label>
+    <input class="form-range" type="range" min="0" max="50" step="0.1" name="noise-gate" id="noise-gate"
+           [value]="userStore.noiseGateValue" (input)="adjustNoiseGate($event)">
+  </div>
+  <mat-divider class="my-2 mx-3"></mat-divider>
 </ng-container>
 

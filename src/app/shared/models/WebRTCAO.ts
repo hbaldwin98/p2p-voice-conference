@@ -7,4 +7,6 @@ export interface WebRTCAO {
   candidate?: RTCIceCandidate;
   socketId: string;
   sender: string;
+  deafened?: boolean;
+  muted?: boolean;
 }

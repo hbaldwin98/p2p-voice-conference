@@ -10,13 +10,13 @@
         <span *ngIf="!selfScreenSharing">{{(this.channel.userStore.displayName || 'You') | slice:0:15 }}</span>
         <div class="d-flex align-items-center justify-content-center">
           <mat-icon class="d-flex align-items-center justify-content-center" color="warn" style="font-size: 20px"
-                    *ngIf="!selfMicActive || selfGlobalMute">mic_off
+                    *ngIf="!selfMicActive || selfDeafened">mic_off
           </mat-icon>
           <mat-icon class="d-flex align-items-center justify-content-center" color="warn" style="font-size: 20px"
-                    *ngIf="selfGlobalMute">volume_off
+                    *ngIf="selfDeafened">volume_off
           </mat-icon>
           <span class="user-picture"
-                [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfGlobalMute) ? 'border-dark': 'border-danger')">
+                [ngClass]="selfIsTalking ? 'border-success' : ((selfMicActive && !selfDeafened) ? 'border-dark': 'border-danger')">
             <img src="assets/picture-placeholder.png" alt="user profile picture">
           </span>
         </div>
@@ -32,13 +32,13 @@
                     *ngIf="peer.value.localMuted">mic_off
           </mat-icon>
           <mat-icon class="d-flex align-items-center justify-content-center" color="warn" style="font-size: 20px"
-                    *ngIf="(peer.value.isMuted || peer.value.isGlobalMuted) && !peer.value.localMuted">mic_off
+                    *ngIf="(peer.value.isMuted || peer.value.isDeafened) && !peer.value.localMuted">mic_off
           </mat-icon>
           <mat-icon class="d-flex align-items-center justify-content-center" color="warn" style="font-size: 20px"
-                    *ngIf="peer.value.isGlobalMuted">volume_off
+                    *ngIf="peer.value.isDeafened">volume_off
           </mat-icon>
           <span class="user-picture"
-                [ngClass]="(peer.value.isTalking && !peer.value.localMuted) ? 'border-success' : ((!peer.value.isMuted && !peer.value.isGlobalMuted) ? (!peer.value.localMuted ? 'border-dark' : 'border-warning'): (!peer.value.localMuted ? 'border-danger' : 'border-warning'))">
+                [ngClass]="(peer.value.isTalking && !peer.value.localMuted) ? 'border-success' : ((!peer.value.isMuted && !peer.value.isDeafened) ? (!peer.value.localMuted ? 'border-dark' : 'border-warning'): (!peer.value.localMuted ? 'border-danger' : 'border-warning'))">
             <img src="assets/picture-placeholder.png" alt="user profile picture">
           </span>
         </div>
@@ -54,7 +54,7 @@
      [matMenuTriggerFor]="menu"></div>
 
 
-<mat-menu #menu="matMenu">
+<mat-menu #menu="matMenu" >
   <ng-template matMenuContent let-peer="peer" let-user="user">
     <app-channel-context-menu [peer]="peer" [user]="user"></app-channel-context-menu>
   </ng-template>
@@ -63,19 +63,16 @@
 
 <!--PEER OPTIONS (TO ADD TO RIGHT CLICK?)-->
 <!--
-<button [disabled]="selfGlobalMute" class="btn btn-dark" (click)="toggleLocalMuteStatus(peer.value)"><i
+<button [disabled]="selfDeafened" class="btn btn-dark" (click)="toggleLocalMuteStatus(peer.value)"><i
          [ngClass]="!getLocalMuteStatus(peer.value) ? 'bi bi-volume-up' : 'bi bi-volume-mute'"></i>
 </button>
 <button *ngIf="peer.value.isSharingScreen" class="btn btn-sm btn-danger"&ndash;&gt;-->
 <!--                  (click)="openScreenShare(peer.value.socketId, peer.value.remoteStream)">SHARING SCREEN-->
 <!--          </button>-->
 <!--          <br>-->
-<!--          <input class="form-range" type="range" min="0" max="1" step="0.001"-->
-<!--                 [value]="peer.value.volume" (input)="adjustVolume($event, peer.value)"-->
-<!--                 [disabled]="peer.value.localMuted">
 
-USER OPTIONS (OPTIONS MENU)
-<div>-->
+<!--USER OPTIONS (OPTIONS MENU)-->
+<!--<div>&ndash;&gt;-->
 <!--  <div class="row">-->
 <!--    <div class="col-auto">-->
 <!--      <label for="display-name">Display Name</label>-->
@@ -83,11 +80,6 @@ USER OPTIONS (OPTIONS MENU)
 <!--             (input)="changeName($event)">-->
 <!--    </div>-->
 <!--    <div>Current Volume: <span #audioMeter></span></div>-->
-<!--    <div class="col-auto">-->
-<!--      <label for="noise-gate">Noise Gate Level {{channel.userStore.noiseGateValue}}</label>-->
-<!--      <input class="form-range" type="range" min="0" max="50" step="0.01" name="noise-gate" id="noise-gate"-->
-<!--             [value]="channel.userStore.noiseGateValue" (input)="adjustNoiseGate($event)">-->
-<!--    </div>-->
 <!--  </div>-->
 <!--</div>-->
 

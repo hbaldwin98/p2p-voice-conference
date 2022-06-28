@@ -13,7 +13,7 @@ export class ChannelService {
     localStream: new MediaStream,
     screenSharingStream: new MediaStream,
     micActive: true,
-    globalMute: false,
+    deafened: false,
     analyser: new AnalyserNode(new AudioContext()),
     volume: 0,
     shouldVolumeTimeout: true,
@@ -23,5 +23,8 @@ export class ChannelService {
   }
 
   constructor() {
+    let noiseGateValue = localStorage.getItem('noiseGateValue');
+    if (noiseGateValue)
+      this.userStore.noiseGateValue = Number(noiseGateValue);
   }
 }

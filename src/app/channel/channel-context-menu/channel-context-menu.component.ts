@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { BsModalRef, BsModalService, ModalOptions } from "ngx-bootstrap/modal";
 import { ChannelScreenShareComponent } from "../channel-screen-share/channel-screen-share.component";
 import { Peer } from "../../shared/models/peer";
@@ -6,6 +6,7 @@ import { ChannelService } from "../channel.service";
 import { IUserStore } from "../../shared/models/userStore";
 import { Socket } from "ngx-socket-io";
 import { WebRTCService } from "../../shared/services/webrtc.service";
+import { TooltipConfig, TooltipDirective } from "ngx-bootstrap/tooltip";
 
 @Component({
   selector: 'app-channel-context-menu',
@@ -13,12 +14,13 @@ import { WebRTCService } from "../../shared/services/webrtc.service";
   styleUrls: ['./channel-context-menu.component.sass']
 })
 export class ChannelContextMenuComponent implements OnInit {
+  @ViewChild(TooltipDirective) toolTip!: TooltipDirective;
   modalRef?: BsModalRef;
   @Input() peer?: Peer;
   @Input() user?: boolean;
   userStore!: IUserStore;
 
-  get selfGlobalMute() { return this.channel.userStore.globalMute; }
+  get selfDeafened() { return this.channel.userStore.deafened; }
   get selfScreenSharing() { return this.channel.userStore.isSharingScreen; }
   get selfIsTalking() { return this.channel.userStore.localStream.getAudioTracks()[0]?.enabled }
   get selfMicActive() { return this.channel.userStore.micActive; }
@@ -51,17 +53,35 @@ export class ChannelContextMenuComponent implements OnInit {
   }
 
   toggleGlobalMute() {
-    this.channel.userStore.globalMute = !this.channel.userStore.globalMute;
-    this.socket.emit('user-global-muted', this.channel.userStore.globalMute);
+    this.channel.userStore.deafened = !this.channel.userStore.deafened;
+    this.socket.emit('user-deafened', this.channel.userStore.deafened);
 
     //for each peer, disable their audio track
     for (const peer in this.channel.peers) {
       const p = this.channel.peers[peer];
-      p.remoteStream.getAudioTracks()[0].enabled = !this.channel.userStore.globalMute;
+      p.remoteStream.getAudioTracks()[0].enabled = !this.channel.userStore.deafened;
     }
   }
 
   toggleScreenSharing() {
     this.webRTC.initializeScreenShare();
   }
+
+  adjustVolume(e: any, peer: Peer) {
+    e.stopPropagation();
+
+    if (this.toolTip.isOpen)
+      this.toolTip.hide();
+
+
+    this.toolTip.show();
+
+    peer.volume = e.target.value;
+  }
+
+  adjustNoiseGate(e: any) {
+    this.channel.userStore.noiseGateValue = e.target.value;
+    localStorage.setItem('noiseGateValue', e.target.value);
+  }
+
 }

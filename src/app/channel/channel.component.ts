@@ -14,7 +14,7 @@ export class ChannelComponent implements OnInit {
   // we create an object that contains coordinates
   menuTopLeftPosition =  {x: '0', y: '0'}
 
-  get selfGlobalMute() { return this.channel.userStore.globalMute; }
+  get selfDeafened() { return this.channel.userStore.deafened; }
   get selfScreenSharing() { return this.channel.userStore.isSharingScreen; }
   get selfIsTalking() { return this.channel.userStore.localStream.getAudioTracks()[0]?.enabled }
   get selfMicActive() { return this.channel.userStore.micActive; }
@@ -47,10 +47,6 @@ export class ChannelComponent implements OnInit {
 
   adjustVolume(e: any, peer: Peer) {
     peer.volume = e.target.value;
-  }
-
-  adjustNoiseGate(e: any) {
-    this.channel.userStore.noiseGateValue = e.target.value;
   }
 
   changeName(e: any) {
