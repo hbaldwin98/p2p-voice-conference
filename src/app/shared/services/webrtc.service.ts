@@ -318,7 +318,7 @@ export class WebRTCService {
         let arr = sdp.sdp.split('\r\n');
         arr.forEach((str: string, i: number) => {
           if (/^a=fmtp:\d*/.test(str)) {
-            arr[i] = str + ';x-google-max-bitrate=10000;x-google-min-bitrate=0;x-google-start-bitrate=6000;minptime=10;useinbandfec=1; stereo=1; maxaveragebitrate=510000; cbr=1';
+            arr[i] = str + ';x-google-max-bitrate=10000;x-google-min-bitrate=0;x-google-start-bitrate=6000;'
           } else if (/^a=mid:(1|video)/.test(str)) {
             arr[i] += '\r\nb=AS:10000';
           }
