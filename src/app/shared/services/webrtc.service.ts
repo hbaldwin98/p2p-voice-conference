@@ -21,7 +21,7 @@ export class WebRTCService {
 
   screenSharingConstraints = {
     video: {
-      width: { ideal: 1920, max: 1920 }, height: { ideal: 1080, max: 1080 }, frameRate: { ideal: 60 }
+      width: { ideal: 1920, max: 1920 }, height: { ideal: 1080, max: 1080 }, frameRate: 60
     },
   }
 
@@ -248,6 +248,8 @@ export class WebRTCService {
     if (screenSharingStream) {
       screenSharingStream.getTracks().forEach((track: any) => {
         console.log('adding screen track', track);
+        track.hint='motion';
+        track.contentHint='motion';
         peer.rtcPeerConnection.addTrack(track, screenSharingStream);
       });
     }
@@ -271,6 +273,8 @@ export class WebRTCService {
     };
 
     peer.rtcPeerConnection.ontrack = (e: any) => {
+      e.track.hint='motion';
+      e.track.contentHint='motion';
       remoteStream.addTrack(e.track);
     };
   }
@@ -284,9 +288,13 @@ export class WebRTCService {
         let arr = sdp.sdp.split('\r\n');
         arr.forEach((str: string, i: number) => {
           if (/^a=fmtp:\d*/.test(str)) {
-            arr[i] = str + ';x-google-max-bitrate=10000;x-google-min-bitrate=0;x-google-start-bitrate=6000;minptime=10;useinbandfec=1; stereo=1; maxaveragebitrate=510000';
+            arr[i] = str + ';x-google-max-bitrate=10000;x-google-min-bitrate=0;x-google-start-bitrate=6000;minptime=10;useinbandfec=1; stereo=1; maxaveragebitrate=510000; profile=0; level-idx=0';
           } else if (/^a=mid:(1|video)/.test(str)) {
             arr[i] += '\r\nb=AS:10000';
+          }
+
+          if (/^a=rtpmap:98\d*/.test(str)) {
+            arr[i] = 'a=rtpmap:98 AV1/90000';
           }
         });
 
@@ -318,9 +326,13 @@ export class WebRTCService {
         let arr = sdp.sdp.split('\r\n');
         arr.forEach((str: string, i: number) => {
           if (/^a=fmtp:\d*/.test(str)) {
-            arr[i] = str + ';x-google-max-bitrate=10000;x-google-min-bitrate=0;x-google-start-bitrate=6000; minptime=10;useinbandfec=1; stereo=1; maxaveragebitrate=510000; cbr=1';
+            arr[i] = str + ';x-google-max-bitrate=10000;x-google-min-bitrate=0;x-google-start-bitrate=6000; minptime=10;useinbandfec=1; stereo=1; maxaveragebitrate=510000; cbr=1; profile=2; level-idx=4; tier=1';
           } else if (/^a=mid:(1|video)/.test(str)) {
             arr[i] += '\r\nb=AS:10000';
+          }
+
+          if (/^a=rtpmap:98\d*/.test(str)) {
+            arr[i] = 'a=rtpmap:98 AV1/90000';
           }
         });
 
